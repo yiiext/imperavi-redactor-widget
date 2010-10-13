@@ -84,8 +84,8 @@ class EImperaviRedactorWidget extends CInputWidget
 	protected function registerClientScript()
 	{
 		$cs=Yii::app()->getClientScript();
-		$cs->registerCoreScript('jquery');
 		$cs->registerCssFile($this->assetsUrl.'/'.$this->cssFile);
+		$cs->registerCoreScript('jquery');
 		$cs->registerScriptFile($this->assetsUrl.'/'.$this->scriptFile);
 		$cs->registerScript(__CLASS__.'#'.$this->id,'jQuery("#'.$this->id.'").redactor('.CJavaScript::encode($this->options).');');
 	}
