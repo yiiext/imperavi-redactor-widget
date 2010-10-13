@@ -1,0 +1,32 @@
+
+<ul class="imp_redactor_modal_menu">
+	<li><a href="javascript:void(null);" onclick="RedactorActive.addCell();" class="imp_modal_btn imp_modal_btn_add_cell" title="%RLANG.add_cell%"></a></li>
+	<li><a href="javascript:void(null);" onclick="RedactorActive.deleteCell();" class="imp_modal_btn imp_modal_btn_delete_cell" title="%RLANG.delete_cell%"></a></li>
+	<li><a href="javascript:void(null);" onclick="RedactorActive.addRow();" class="imp_modal_btn imp_modal_btn_add_row" title="%RLANG.add_row%"></a></li>
+	<li><a href="javascript:void(null);" onclick="RedactorActive.deleteRow();" class="imp_modal_btn imp_modal_btn_delete_row" title="%RLANG.delete_row%"></a></li>
+	<li><a href="javascript:void(null);" onclick="RedactorActive.addHead();" class="imp_modal_btn imp_modal_btn_add_head" title="%RLANG.thead%"></a></li>	
+	<li class="imp_modal_link" id="imp_modal_link_delete_table" style="display: none;"><a href="javascript:void(null);" onclick="RedactorActive.deleteTable();">%RLANG.delete_table%</a></li>			
+</ul>
+<div id="imp_redactor_table_box">
+	<table style="width: 100%;">
+		<thead>
+			<tr>
+				<td>Head 1</td>
+				<td>Head 2</td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>Cell 1</td>
+				<td>Cell 2</td>
+			</tr>			
+			<tr>
+				<td>Cell 3</td>
+				<td>Cell 4</td>
+			</tr>		
+		</tbody>
+	</table>
+</div>
+
+<p><input type="button" name="" id="" value="%RLANG.insert%" onclick="RedactorActive.insertTable();" />&nbsp;&nbsp;
+<input type="button" name=""  onclick="RedactorActive.modalClose();" value="%RLANG.cancel%"  /></p>
