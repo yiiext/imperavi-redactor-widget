@@ -24,8 +24,8 @@ var RTOOLBAR = {
 			strikethrough:  {exec: 'StrikeThrough', name: 'StrikeThrough', title: RLANG.strikethrough, style: 'text-decoration: line-through !important;'},
 			fgcolor: 	  {name: 'fgcolor', title: RLANG.fontcolor, func: 'showFgcolor'},
 			hilite: 	  {name: 'hilite', title: RLANG.backcolor, func: 'showHilite'},
-			removeformat: {exec: 'removeformat', name: 'removeformat', title: RLANG.removeformat},
-			clearWord: {func: 'clearWord', name: 'clearWord', title: RLANG.cleanstyles}
+			removeformat: {exec: 'removeformat', name: 'removeformat', title: RLANG.removeformat}
+			//clearWord: {func: 'clearWord', name: 'clearWord', title: RLANG.cleanstyles}
 		}						
 	},
 	lists: 	
@@ -51,7 +51,7 @@ var RTOOLBAR = {
 	},				
 	image: { name: 'image', title: RLANG.image, func: 'showImage' },
 	table: { name: 'table', title: RLANG.table, func: 'showTable' },
-	//video: { name: 'video', title: RLANG.video, func: 'showVideo' },
+	video: { name: 'video', title: RLANG.video, func: 'showVideo' },
 	//charmap: { name: 'charmap', title: RLANG.charmap, func: 'showCharmap' },	
 	link: 
 	{

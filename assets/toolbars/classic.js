@@ -55,7 +55,7 @@ var RTOOLBAR = {
 		}			
 	},
 	separator8: { name: 'separator' },	
-	clearWord: {func: 'clearWord', name: 'word_clean', title: RLANG.cleanstyles},	
+	//clearWord: {func: 'clearWord', name: 'word_clean', title: RLANG.cleanstyles},	
 	removeformat: {exec: 'removeformat', name: 'format_clean', title: RLANG.removeformat},	
 	separator6: { name: 'separator' },		
 	cut: { name: 'cut', title: RLANG.cut, func: 'setCut' }	

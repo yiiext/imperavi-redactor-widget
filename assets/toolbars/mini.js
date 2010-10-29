@@ -21,8 +21,8 @@ var RTOOLBAR = {
 			strikethrough:  {exec: 'StrikeThrough', name: 'StrikeThrough', title: RLANG.strikethrough, style: 'text-decoration: line-through !important;'},
 			fgcolor: 	  {name: 'fgcolor', title: RLANG.fontcolor, func: 'showFgcolor'},
 			hilite: 	  {name: 'hilite', title: RLANG.backcolor, func: 'showHilite'},
-			removeformat: {exec: 'removeformat', name: 'removeformat', title: RLANG.removeformat},
-			clearWord: {func: 'clearWord', name: 'clearWord', title: RLANG.cleanstyles}
+			removeformat: {exec: 'removeformat', name: 'removeformat', title: RLANG.removeformat}
+			//clearWord: {func: 'clearWord', name: 'clearWord', title: RLANG.cleanstyles}
 		}						
 	},
 	lists: 	

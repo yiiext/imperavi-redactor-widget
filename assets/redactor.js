@@ -1,5 +1,5 @@
 /*
-	Redactor v6.0.0
+	Redactor v6.1.1
 	http://imperavi.com/
  
 	Copyright 2010, Imperavi Ltd.
@@ -57,6 +57,7 @@ var twidth;
 			uploadFunction: false,
 			width: false,
 			height: false,
+			autoclear: true,
 			autoformat: true,
 			overlay: true,
 			colors: Array(
@@ -147,11 +148,24 @@ var twidth;
 
 			$(this.doc).click(function() { this.hideAllDropDown() }.bind(this));
 
+			$(this.doc).bind('paste', function(e)
+			{ 
+				if (this.opts.autoclear) setTimeout(function () { this.clearWord(); }.bind(this), 1000);
+				else this.syncCode();
+					
+			}.bind(this));
+
 			
 			// doc events
    			$(this.doc).keydown(function(e)
 		    {
 		        if (e.ctrlKey || e.metaKey) isCtrl = true;
+		        
+		        if (this.opts.autoclear) 
+		        {
+		        	if (e.keyCode == 86 && isCtrl) { setTimeout(function () { this.clearWord(); }.bind(this), 1000); }	
+		        }
+		        	        
 		        if (e.keyCode == 9) { this.execCommand('indent', false); return false; }
 		        if (e.keyCode == 66 && isCtrl) { this.execCommand('bold', 'bold'); return false; }
 		        if (e.keyCode == 73 && isCtrl) { this.execCommand('italic', 'italic'); return false; }	 
@@ -219,6 +233,9 @@ var twidth;
 		enable: function(html)
 		{				
 	   		this.doc = this.contentDocumentFrame(this.frame);
+	   		
+			// flash replace
+			html = html.replace(/\<object([\w\W]*?)\<\/object\>/gi, '<p class="redactor_video_box"><object$1</object></p>');	   		
 	   		
 			this.doc.open();
 			this.doc.write(this.getEditorDoc(html));
@@ -328,9 +345,20 @@ var twidth;
 		*/	
 		clearWord: function()
 		{
+			
+			
 			var html = this.getHtml();
 			html = CleanWHtml(html);			
+			
+	
+			
+			html = this.tidyUp(html);	
 			this.setHtml(html);
+			
+			this.paragraphise();			
+			
+			this.formatHtml(html);			
+			
 		},		
 		tidyUp: function(html)
 		{
@@ -345,6 +373,11 @@ var twidth;
 				}) 
 			}
 	
+			html = html.replace(/<p><br><\/p>/gi, '');
+			
+			var re= new RegExp('<font[^><]*>|<\/font[^><]*>','g')
+			html = html.replace(re,'');
+					
 			if ($.browser.mozilla) html = this.convertSpan(html);
 			
 			return html;
@@ -664,7 +697,7 @@ var twidth;
 	
 	
 				// flash replace
-				html = html.replace(/<div(.*?)class="redactor_video_box"(.*?)>([\w\W]*?)\<\/div>/gi, "$3");
+				html = html.replace(/<p(.*?)class="redactor_video_box"(.*?)>([\w\W]*?)\<\/p>/gi, "$3");
 
 				// cut replace	
 				html = html.replace(/<hr class="redactor_cut">/gi, '<!--more-->');
@@ -688,7 +721,7 @@ var twidth;
 				html = html.replace(/<!--more-->/gi, '<hr class="redactor_cut">');
 	
 				// flash replace
-				html = html.replace(/\<object([\w\W]*?)\<\/object\>/gi, '<div class="redactor_video_box"><object$1</object></div>');
+				html = html.replace(/\<object([\w\W]*?)\<\/object\>/gi, '<p class="redactor_video_box"><object$1</object></p>');
 	
 				this.doc.body.innerHTML = html;
 				
@@ -712,7 +745,7 @@ var twidth;
 		showVideo: function()
 		{
 			RedactorActive = this;
-			this.modalInit(RLANG.video, this.opts.path + 'plugins/video.html', 600, 330);
+			this.modalInit(RLANG.video, this.opts.path + 'plugins/video.html', 600, 360);
 		},	
 		insertVideo: function()
 		{
@@ -1394,9 +1427,7 @@ var twidth;
 						// toolbar drop down
 						if (typeof(s.dropdown) != 'undefined')
 						{
-							var left = $(li).position().left;
-		
-							var ul = $('<ul class="imp_redactor_drop_down imp_redactor_drop_down' + this.frameID + '" id="imp_redactor_drop_down' + this.frameID + '_' + s.name + '" style="left: ' + left + 'px; display: none;"></ul>');
+							var ul = $('<ul class="imp_redactor_drop_down imp_redactor_drop_down' + this.frameID + '" id="imp_redactor_drop_down' + this.frameID + '_' + s.name + '" style="display: none;"></ul>');
 							
 							if ($.browser.msie) ul.css({ borderLeft: '1px solid #ddd',  borderRight: '1px solid #ddd',  borderBottom: '1px solid #ddd' });
 										
@@ -1416,6 +1447,7 @@ var twidth;
 							);
 	
 							$('#imp_redactor_toolbar_' + this.frameID).after(ul);
+			
 							
 							this.hdlHideDropDown = function(e) { this.hideDropDown(e, ul, s.name) }.bind(this);
 							this.hdlShowDropDown = function(e) { this.showDropDown(e, ul, s.name) }.bind(this);
@@ -1454,7 +1486,9 @@ var twidth;
 			this.hideAllDropDown();
 			 		
 	   		this.addSelButton(name);
-	   		$(ul).show();	
+	   		
+			var left = $('#imp_redactor_toolbar_' + this.frameID + ' li.imp_li_btn_' + name).position().left;
+			$(ul).css('left', left + 'px').show();	   		
 	
 		},
 		showerDropDown: function(e, ul, name)
@@ -1881,6 +1915,8 @@ function placeTag(tag, out) {
 function CleanWHtml(html)
 { 
 	var s = html.replace(/\r/g, '\n').replace(/\n/g, ' ');
+	
+	//s = s.replace(/<font(.*?)>([\\w\\W]*?)<\/font>/gi, '$2');
 	
 	var rs = [];
 	rs.push(/<!--.+?-->/g); // Comments

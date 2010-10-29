@@ -1,2 +1,5 @@
+0.2
+[*] Imperavi redactor updated to version 6.1.1
+
 0.1
 [+] Initial release.

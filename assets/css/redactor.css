@@ -22,8 +22,9 @@ body .imp_redactor_box textarea {
 
 body .imp_redactor_drop_down {
 	z-index: 2;
-	position: absolute;
+	position: absolute !important;
 	top: 32px;
+	left: 0;
 	background-color: #fff;
 	box-shadow: 0px 1px 5px #666;
 	-webkit-box-shadow: 0 1px 5px #666; 
@@ -32,6 +33,7 @@ body .imp_redactor_drop_down {
 body .imp_redactor_drop_down li {
 	font-size: 13px !important;
 	float: none !important;
+	list-style: none !important;	
 }
 body .imp_redactor_drop_down li a {
 	color: #000 !important;
@@ -46,23 +48,23 @@ body .imp_redactor_drop_down li a:hover {
 }
 
 body .imp_redactor_toolbar, body .imp_redactor_toolbar li, body .imp_redactor_drop_down, body .imp_redactor_drop_down li {
-	margin: 0;
-	padding: 0;
-	list-style: none;
+	margin: 0 !important;
+	padding: 0 !important;
+	list-style: none !important;
 	line-height: 1;
 }
 body .imp_redactor_toolbar {
-	position: relative;
-	overflow: hidden;
+	position: relative !important;
+	overflow: hidden !important;
 	background: url(../i/bg.png) repeat-x top #d1d1d1;
 	border-bottom: 1px solid #b1b1b1;
 
 }
 body .imp_redactor_toolbar li {
-	float: left;
+	float: left !important;
 	width: 36px;
-	height: 32px;
-	position: relative;
+	height: 32px !important;
+	position: relative !important;
 }
 body .imp_redactor_toolbar li.act {
 	z-index: 3;
