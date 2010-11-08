@@ -7,7 +7,7 @@
  * @license http://www.opensource.org/licenses/bsd-license.php
  */
 /**
- * EImperaviRedactorWidget adds {@link http://redactor.imperavi.ru/ imperavi redactor} as a form field widget.
+ * EImperaviRedactorWidget adds {@link http://imperavi.ru/redactor/ imperavi redactor} as a form field widget.
  *
  * Usage:
  * <pre>
@@ -17,7 +17,7 @@
  *     'attribute'=>'my_field',
  *     // or just for input field
  *     'name'=>'my_input_name',
- *     // imperavi redactor {@link http://redactor.imperavi.ru/ options}
+ *     // imperavi redactor {@link http://imperavi.ru/redactor/docs/ options}
  *     'options'=>array(
  *         'toolbar'=>'classic',
  *         'cssPath'=>Yii::app()->theme->baseUrl.'/css/',
@@ -28,7 +28,7 @@
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
  * @version 0.1
  * @package yiiext.widgets.imperaviRedactor
- * @link http://redactor.imperavi.ru/
+ * @link http://imperavi.ru/redactor/
  */
 class EImperaviRedactorWidget extends CInputWidget
 {
@@ -45,7 +45,7 @@ class EImperaviRedactorWidget extends CInputWidget
 	 */
 	public $cssFile;
 	/**
-	 * @var array imperavi redactor {@link http://redactor.imperavi.ru/ options}.
+	 * @var array imperavi redactor {@link http://imperavi.ru/redactor/docs/ options}.
 	 */
 	public $options=array();
 
@@ -84,6 +84,15 @@ class EImperaviRedactorWidget extends CInputWidget
 	protected function registerClientScript()
 	{
 		$cs=Yii::app()->getClientScript();
+		$baseDir=Yii::app()->getBasePath().'/..';
+
+		if(file_exists($baseDir.$this->options['toolbar']))
+		{
+			$dir=$baseDir.$this->assetsUrl;
+			copy($baseDir.$this->options['toolbar'],$dir.'/toolbars/'.basename($this->options['toolbar']));
+			$this->options['toolbar']=substr(basename($this->options['toolbar']),0,-3);
+		}
+
 		$cs->registerCssFile($this->assetsUrl.'/'.$this->cssFile);
 		$cs->registerCoreScript('jquery');
 		$cs->registerScriptFile($this->assetsUrl.'/'.$this->scriptFile);
