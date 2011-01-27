@@ -1,5 +1,5 @@
-EImperaviRedactorWidget.
-===============
+EImperaviRedactorWidget
+=======================
 
 Adds [imperavi redactor](http://redactor.imperavi.ru/) as a form field widget.
 

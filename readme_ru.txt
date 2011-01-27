@@ -1,5 +1,5 @@
-EImperaviRedactorWidget.
-===============
+EImperaviRedactorWidget
+=======================
 
 Позволяет использовать [imperavi redactor](http://redactor.imperavi.ru/) как виджет формы.
 
@@ -13,7 +13,7 @@ $this->widget('ext.yiiext.widgets.imperaviRedactor.EImperaviRedactorWidget',arra
 	'attribute'=>'my_field',
 	// так и просто для элемента формы
 	'name'=>'my_input_name',
-	// [настройки](http://redactor.imperavi.ru/) редактора imperavi 
+	// [настройки](http://redactor.imperavi.ru/) редактора imperavi
 	'options'=>array(
 		'toolbar'=>'classic',
 		'cssPath'=>Yii::app()->theme->baseUrl.'/css/',

@@ -26,7 +26,7 @@
  * </pre>
 
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
- * @version 0.1
+ * @version 0.2
  * @package yiiext.widgets.imperaviRedactor
  * @link http://imperavi.ru/redactor/
  */
