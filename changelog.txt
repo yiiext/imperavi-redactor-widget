@@ -1,3 +1,8 @@
+0.3
+---
+- Imperavi redactor updated to version 6.4.0
+- $scriptFile and $cssFile must be the real path
+
 0.2
 ---
 - Imperavi redactor updated to version 6.1.1

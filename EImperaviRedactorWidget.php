@@ -26,7 +26,7 @@
  * </pre>
 
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
- * @version 0.2
+ * @version 0.3
  * @package yiiext.widgets.imperaviRedactor
  * @link http://imperavi.ru/redactor/
  */
@@ -61,10 +61,10 @@ class EImperaviRedactorWidget extends CInputWidget
 
 		if($this->scriptFile===null)
 			// todo: add minified js
-			$this->scriptFile=YII_DEBUG ? 'redactor.js' : 'redactor.js';
+			$this->scriptFile=$this->assetsUrl.'/'.(YII_DEBUG ? 'editor.js' : 'editor.js');
 
 		if($this->cssFile===null)
-			$this->cssFile='css/redactor.css';
+			$this->cssFile=$this->assetsUrl.'/css/editor.css';
 
 		$this->registerClientScript();
 	}
@@ -83,19 +83,13 @@ class EImperaviRedactorWidget extends CInputWidget
 	 */
 	protected function registerClientScript()
 	{
+		if(isset($this->options['path']))
+			$this->options['path']=rtrim($this->options['path'],'/\\').'/';
+
 		$cs=Yii::app()->getClientScript();
-		$baseDir=Yii::app()->getBasePath().'/..';
-
-		if(file_exists($baseDir.$this->options['toolbar']))
-		{
-			$dir=$baseDir.$this->assetsUrl;
-			copy($baseDir.$this->options['toolbar'],$dir.'/toolbars/'.basename($this->options['toolbar']));
-			$this->options['toolbar']=substr(basename($this->options['toolbar']),0,-3);
-		}
-
-		$cs->registerCssFile($this->assetsUrl.'/'.$this->cssFile);
+		$cs->registerCssFile($this->cssFile);
 		$cs->registerCoreScript('jquery');
-		$cs->registerScriptFile($this->assetsUrl.'/'.$this->scriptFile);
-		$cs->registerScript(__CLASS__.'#'.$this->id,'jQuery("#'.$this->id.'").redactor('.CJavaScript::encode($this->options).');');
+		$cs->registerScriptFile($this->scriptFile);
+		$cs->registerScript(__CLASS__.'#'.$this->id,'jQuery("#'.$this->id.'").editor('.CJavaScript::encode($this->options).');');
 	}
 }
