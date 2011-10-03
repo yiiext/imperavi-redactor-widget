@@ -1,19 +1,20 @@
-EImperaviRedactorWidget
+ImperaviRedactorWidget
 =======================
 
-Adds [imperavi redactor](http://redactor.imperavi.ru/) as a form field widget.
+ImperaviRedactorWidget wrapper around [imperavi WYSIWYG](http://imperavi.ru/redactor/).
 
 Usage
 -----
 ~~~
 [php]
-$this->widget('ext.yiiext.widgets.imperaviRedactor.EImperaviRedactorWidget',array(
+Yii::import('ext.imperavi-redactor-widget.ImperaviRedactorWidget');
+$this->widget('ImperaviRedactorWidget',array(
 	// you can either use it for model attribute
 	'model'=>$my_model,
 	'attribute'=>'my_field',
 	// or just for input field
 	'name'=>'my_input_name',
-	// imperavi redactor [options](http://redactor.imperavi.ru/)
+	// imperavi redactor [options](http://imperavi.ru/redactor/docs/)
 	'options'=>array(
 		'toolbar'=>'classic',
 		'cssPath'=>Yii::app()->theme->baseUrl.'/css/',

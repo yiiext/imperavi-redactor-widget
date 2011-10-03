@@ -1,6 +1,5 @@
 var RTOOLBAR = {
 	html: { name: 'html', title: RLANG.html, func: 'toggle' },	
-	fullscreen: { name: 'fullscreen', title: RLANG.fullscreen, func: 'fullscreen' },
 	styles: 
 	{
 		name: 'styles', title: RLANG.styles, func: 'show', 
@@ -35,16 +34,6 @@ var RTOOLBAR = {
 			outdent: {exec: 'outdent', name: 'outdent', title: '< ' + RLANG.outdent},
 			indent:  {exec: 'indent', name: 'indent', title: '> ' + RLANG.indent}
 		}			
-	},
-	align: 	
-	{
-		name: 'align', title: RLANG.align, func: 'show',
-		dropdown: 
-		{
-			JustifyLeft: 	 {exec: 'JustifyLeft', name: 'JustifyLeft', title: RLANG.align_left},					
-			JustifyCenter: 	 {exec: 'JustifyCenter', name: 'JustifyCenter', title: RLANG.align_center},
-			JustifyRight: {exec: 'JustifyRight', name: 'JustifyRight', title: RLANG.align_right}
-		}		
 	},				
 	image: { name: 'image', title: RLANG.image, func: 'showImage' },
 	table:
@@ -69,9 +58,6 @@ var RTOOLBAR = {
 	},
 	video: { name: 'video', title: RLANG.video, func: 'showVideo' },
 	file: { name: 'file', title: RLANG.file, func: 'showFile' },	
-	charmap: { name: 'charmap', title: RLANG.charmap, func: 'showCharmap' },
-	hilite:  {name: 'backcolor', title: RLANG.backcolor, func: 'show'},
-	fgcolor: {name: 'fontcolor', title: RLANG.fontcolor, func: 'show'},	
 	link: 
 	{
 		name: 'link', title: RLANG.link, func: 'show',
