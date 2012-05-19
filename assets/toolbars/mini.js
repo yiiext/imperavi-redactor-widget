@@ -1,65 +1,103 @@
-var RTOOLBAR = {
-	html: 	{name: 'html', title: RLANG.html, func: 'toggle'},
-	styles: 
-	{
-		name: 'styles', title: RLANG.styles, func: 'show', 
-		dropdown: 
-		{
-			p: 			{exec: 'formatblock', name: '<p>', title: RLANG.paragraph},
-			blockquote: {exec: 'formatblock', name: '<blockquote>', title: RLANG.quote},
-			code: 		{exec: 'formatblock', name: '<pre>', title: RLANG.code}
-		}
-	},
-	format: 
-	{
-		name: 'format', title: RLANG.format, func: 'show',
-		dropdown: 
-		{
-			bold: 		  {exec: 'bold', name: 'bold', title: RLANG.bold, style: 'font-weight: bold;'},
-			italic: 	  {exec: 'italic', name: 'italic', title: RLANG.italic, style: 'font-style: italic;'},
-			superscript:  {exec: 'superscript', name: 'superscript', title: RLANG.superscript},
-			strikethrough:  {exec: 'StrikeThrough', name: 'StrikeThrough', title: RLANG.strikethrough, style: 'text-decoration: line-through !important;'},
-			removeformat: {exec: 'removeformat', name: 'removeformat', title: RLANG.removeformat}
-		}						
-	},
-	lists: 	
-	{
-		name: 'lists', title: RLANG.lists, func: 'show',
-		dropdown: 
-		{
-			ul: 	 {exec: 'insertunorderedlist', name: 'insertunorderedlist', title: '&bull; ' + RLANG.unorderedlist},
-			ol: 	 {exec: 'insertorderedlist', name: 'insertorderedlist', title: '1. ' + RLANG.orderedlist},
-			outdent: {exec: 'outdent', name: 'outdent', title: '< ' + RLANG.outdent},
-			indent:  {exec: 'indent', name: 'indent', title: '> ' + RLANG.indent}
-		}			
-	},
-	//image: 	{name: 'image', title: 'RLANG.image', func: 'showImage'},
-/*
-	table:
+if (typeof RTOOLBAR == 'undefined') var RTOOLBAR = {};
+
+RTOOLBAR['mini'] = {
+	styles:
 	{ 
-		name: 'table', title: RLANG.table, func: 'show',
+		title: RLANG.styles,
+		func: 'show', 				
 		dropdown: 
-		{
-			insert_table: { name: 'insert_table', title: RLANG.insert_table, func: 'showTable' },
-			insert_row_above: { name: 'insert_row_above', title: RLANG.insert_row_above, func: 'insertRowAbove' },
-			insert_row_below: { name: 'insert_row_below', title: RLANG.insert_row_below, func: 'insertRowBelow' },
-			insert_column_left: { name: 'insert_column_left', title: RLANG.insert_column_left, func: 'insertColumnLeft' },
-			insert_column_right: { name: 'insert_column_right', title: RLANG.insert_column_right, func: 'insertColumnRight' },									
-			add_head: { name: 'add_head', title: RLANG.add_head, func: 'addHead' },									
-			delete_head: { name: 'delete_head', title: RLANG.delete_head, func: 'deleteHead' },	
-			delete_column: { name: 'delete_column', title: RLANG.delete_column, func: 'deleteColumn' },									
-			delete_row: { name: 'delete_row', title: RLANG.delete_row, func: 'deleteRow' },									
-			delete_table: { name: 'delete_table', title: RLANG.delete_table, func: 'deleteTable' }																		
-		}		
+	    {
+			 p:
+			 {
+			 	title: RLANG.paragraph,			 
+			 	exec: 'formatblock',
+			 	param: '<p>'
+			 },
+			 blockquote:
+			 {
+			 	title: RLANG.quote,
+			 	exec: 'formatblock',	
+			 	param: '<blockquote>',
+			 	style: 'font-style: italic; color: #666; padding-left: 10px;'			 			 	
+			 },
+			 pre:
+			 {  
+			 	title: RLANG.code,
+			 	exec: 'formatblock',
+			 	param: '<pre>',
+			 	style: 'font-family: monospace, sans-serif;'
+			 },
+			 h1:
+			 {
+			 	title: RLANG.header1,			 
+			 	exec: 'formatblock',   
+			 	param: '<h1>',			 	
+			 	style: 'font-size: 30px; line-height: 36px; font-weight: bold;'
+			 },
+			 h2:
+			 {
+			 	title: RLANG.header2,			 
+			 	exec: 'formatblock',   
+			 	param: '<h2>',			 	
+			 	style: 'font-size: 24px; line-height: 36px; font-weight: bold;'
+			 },
+			 h3:
+			 {
+			 	title: RLANG.header3,			 
+			 	exec: 'formatblock', 
+			 	param: '<h3>',			 	  
+			 	style: 'font-size: 20px; line-height: 30px;  font-weight: bold;'
+			 },		
+			 h4:
+			 {
+			 	title: RLANG.header4,			 
+			 	exec: 'formatblock', 
+			 	param: '<h3>',			 	  
+			 	style: 'font-size: 16px; line-height: 26px;  font-weight: bold;'
+			 }																	
+		},
+		separator: true
 	},
-*/
-	link: 
+	bold:
 	{
-		name: 'link', title: RLANG.link, func: 'show',
+		title: RLANG.bold,
+		exec: 'bold'
+	}, 
+	italic: 
+	{
+		title: RLANG.italic,
+		exec: 'italic',
+		separator: true		
+	},
+	insertunorderedlist:
+	{
+		title: '&bull; ' + RLANG.unorderedlist,
+		exec: 'insertunorderedlist'
+	},
+	insertorderedlist: 
+	{
+		title: '1. ' + RLANG.orderedlist,
+		exec: 'insertorderedlist'
+	},
+	outdent: 
+	{	
+		title: '< ' + RLANG.outdent,
+		exec: 'outdent'
+	},
+	indent:
+	{
+		title: '> ' + RLANG.indent,
+		exec: 'indent',
+		separator: true
+	},
+	link:
+	{ 
+		title: RLANG.link, 
+		func: 'show', 				
 		dropdown: 
 		{
 			link: 	{name: 'link', title: RLANG.link_insert, func: 'showLink'},
 			unlink: {exec: 'unlink', name: 'unlink', title: RLANG.unlink}
-		}			
+		}															
 	}
-}
+};

@@ -1,29 +1,74 @@
-<form id="redactorInsertLinkForm">
-<table class="redactor_ruler" style="margin-bottom: 6px;">
-	<tr>
-		<td style="white-space: nowrap;"><input value="link" name="redactor_link" id="redactor_link_id_url" type="radio" onclick="$('#redactor_link_url_name').text('URL')" checked="checked">&nbsp;<label for="redactor_link_id_url">%RLANG.web%</label></td>
-		<td width="100%"><input value="email" name="redactor_link" id="redactor_link_id_email" onclick="$('#redactor_link_url_name').text('%RLANG.mailto%')"  type="radio">&nbsp;<label for="redactor_link_id_email">%RLANG.mailto%</label></td>
-	</tr>
-</table>
+<form id="redactorInsertLinkForm" method="post" action="" enctype="multipart/form-data">
 
-<table class="redactor_ruler">
-	<tr>
-		<td nowrap id="redactor_link_url_name">URL</td>
-		<td width="100%"><input name="redactor_link_url" id="redactor_link_url" style="width: 99%;"  /></td>
-	</tr>
-	<tr>
-		<td>%RLANG.text%</td>
-		<td><input name="redactor_link_text" id="redactor_link_text" style="width: 99%;" /></td>
-	</tr>
-	<tr>
-		<td>%RLANG.title%</td>
-		<td><input name="redactor_link_title" id="redactor_link_title"  style="width: 99%;"   /></td>
-	</tr>
-</table>
+
+	<div id="redactor_tabs">
+		<a href="javascript:void(null);" class="redactor_tabs_act">URL</a>
+		<a href="javascript:void(null);">Email</a>
+		<a href="javascript:void(null);">%RLANG.anchor%</a>
+		<a href="javascript:void(null);">%RLANG.file%</a>
+	</div>
+	
+	<input type="hidden" id="redactor_tab_selected" value="1" />
+	
+	<div class="redactor_tab" id="redactor_tab1">
+		<table class="redactor_ruler">
+			<tr>
+				<td nowrap>URL</td>
+				<td width="100%"><input id="redactor_link_url" style="width: 99%; font-size: 16px;"  /></td>
+			</tr>
+			<tr>
+				<td>%RLANG.text%</td>
+				<td><input class="redactor_link_text" id="redactor_link_url_text" style="width: 99%; font-size: 16px;" /></td>
+			</tr>
+		</table>
+	</div>
+	<div class="redactor_tab" id="redactor_tab2" style="display: none;">
+		<table class="redactor_ruler">
+			<tr>
+				<td nowrap>Email</td>
+				<td width="100%"><input id="redactor_link_mailto" style="width: 99%; font-size: 16px;"  /></td>
+			</tr>
+			<tr>
+				<td>%RLANG.text%</td>
+				<td><input class="redactor_link_text" id="redactor_link_mailto_text" style="width: 99%; font-size: 16px;" /></td>
+			</tr>
+		</table>
+	</div>
+	<div class="redactor_tab" id="redactor_tab3" style="display: none;">
+		<table class="redactor_ruler">
+			<tr>
+				<td nowrap>%RLANG.anchor%</td>
+				<td width="100%"><input id="redactor_link_anchor" style="width: 99%; font-size: 16px;"  /></td>
+			</tr>
+			<tr>
+				<td>%RLANG.text%</td>
+				<td><input class="redactor_link_text" id="redactor_link_anchor_text" style="width: 99%; font-size: 16px;" /></td>
+			</tr>
+		</table>
+	</div>
+	<div class="redactor_tab" id="redactor_tab4" style="display: none;">
+		<table class="redactor_ruler">
+			<tr>
+				<td>%RLANG.text%</td>
+				<td><input class="redactor_link_text" id="redactor_link_file_text" style="width: 99%; font-size: 16px;" /></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+				
+					<input type="file" id="redactor_file" name="file" />
+				
+				</td>
+			</tr>
+		</table>	
+		
+	</div>
 
 
 </form>
 
-
-<input type="button" name="" id="" value="%RLANG.insert%" onclick="redactorActive.insertLink();" />&nbsp;&nbsp;
-<input type="button" name="" onclick="redactorActive.modalClose();" value="%RLANG.cancel%"  />
+<span class="redactor_btns_box">
+<input type="button" id="redactor_insert_link_btn" value="%RLANG.insert%" />&nbsp;&nbsp;
+<a href="javascript:void(null);" style="color: #777; font-size: 12px;" id="redactor_btn_modal_close">%RLANG.cancel%</a>
+</span>
+<div style="clear: both;"></div>
