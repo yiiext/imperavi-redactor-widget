@@ -7,11 +7,17 @@
  * @license http://www.opensource.org/licenses/bsd-license.php
  */
 /**
- * ImperaviRedactorWidget wrapper around {@link http://imperavi.ru/redactor/ imperavi WYSIWYG}.
+ * ImperaviRedactorWidget wrapper around {@link http://redactorjs.com Fantastic WYSIWYG-editor on jQuery}.
  *
  * Usage:
+ *
+ * First, import the class file
  * <pre>
  * Yii::import('ext.imperavi-redactor-widget.ImperaviRedactorWidget');
+ * </pre>
+ *
+ * Next, render the textarea and create it into redactor
+ * <pre>
  * $this->widget('ImperaviRedactorWidget',array(
  *     // you can either use it for model attribute
  *     'model'=>$my_model,
@@ -20,93 +26,92 @@
  *     'name'=>'my_input_name',
  *     // imperavi redactor {@link http://imperavi.ru/redactor/docs/ options}
  *     'options'=>array(
- *         'toolbar'=>'classic',
- *         'cssPath'=>Yii::app()->theme->baseUrl.'/css/',
+ *         'lang'=>'en',
+ *         'toolbar'=>'mini',
+ *         'css'=>'wym.css',
  *     ),
  * ));
  * </pre>
-
+ * Or create redactor from textarea by selector
+ * <pre>
+ * $this->widget('ImperaviRedactorWidget',array(
+ *     // the textarea selector
+ *     'selector'=>'.redactor',
+ *     // imperavi redactor {@link http://imperavi.ru/redactor/docs/ options}
+ *     'options'=>array(),
+ * ));
+ * </pre>
+ *
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
- * @version 0.4
+ * @version 0.5
  * @package yiiext.imperavi-redactor-widget
- * @link http://imperavi.ru/redactor/
+ * @link http://redactorjs.com
  */
-class ImperaviRedactorWidget extends CInputWidget
+class ImperaviRedactorWidget extends \CInputWidget
 {
 	/**
-	 * @var string
+	 * Assets package ID.
 	 */
-	public $packageName='imperavi-redactor';
+	const PACKAGE_ID='imperavi-redactor';
 	/**
-	 * @var array imperavi redactor {@link http://imperavi.ru/redactor/docs/ options}.
+	 * @var array {@link http://redactorjs.com/docs redactor options}.
 	 */
 	public $options=array();
+	/**
+	 * @var string|null The textarea selector. If it null, will be render the textarea.
+	 * Defaults to null.
+	 */
+	public $selector;
 
 	/**
 	 * Init widget.
 	 */
 	public function init()
 	{
-		list($this->name,$this->id)=$this->resolveNameId();
-		$this->getPackage();
-	}
-	/**
-	 * Run widget.
-	 */
-	public function run()
-	{
-		if(isset($this->options['path']))
-			$this->options['path']=rtrim($this->options['path'],'/\\').'/';
+		parent::init();
+
+		if($this->selector===null)
+		{
+			list($this->name,$this->id)=$this->resolveNameId();
+			$this->selector='#'.$this->id;
+
+			if($this->hasModel())
+			{
+				echo CHtml::activeTextArea($this->model,$this->attribute,$this->htmlOptions);
+			}
+			else
+			{
+				$this->htmlOptions['id']=$this->id;
+				echo CHtml::textArea($this->name,$this->value,$this->htmlOptions);
+			}
+		}
 
 		$this->registerClientScript();
-
-		if($this->hasModel())
-			echo CHtml::activeTextArea($this->model,$this->attribute,$this->htmlOptions);
-		else
-			echo CHtml::textArea($this->name,$this->value,$this->htmlOptions);
 	}
-	/**
-	 * @return array
-	 */
-	public function getPackage()
-	{
-		/**
-		 * @var CClientScript $cs
-		 * @var CAssetManager $ap
-		 */
-		$cs=Yii::app()->getClientScript();
-		$ap=Yii::app()->getAssetManager();
 
-		if(!isset($cs->packages[$this->packageName]))
-			$cs->packages[$this->packageName]=array(
-				'basePath'=>dirname(__FILE__).'/assets',
-				/**
-				 * @todo Add minimizied script.
-				 */
-				'js'=>array('redactor'.(YII_DEBUG?'':'').'.js',),
-				'css'=>array('css/redactor.css',),
-				'depends'=>array('jquery',),
-			);
-
-		// Publish package assets. Force copy assets in debug mode.
-		if(!isset($cs->packages[$this->packageName]['baseUrl']))
-			$cs->packages[$this->packageName]['baseUrl']=$ap->publish($cs->packages[$this->packageName]['basePath'],false,-1,YII_DEBUG);
-
-		return $cs->packages[$this->packageName];
-	}
 	/**
 	 * Register CSS and Script.
 	 */
 	protected function registerClientScript()
 	{
-		/**
-		 * @var CClientScript $cs
-		 */
+		/** @var $cs \CClientScript */
 		$cs=Yii::app()->getClientScript();
-		$cs->registerPackage($this->packageName);
+		if(!isset($cs->packages[self::PACKAGE_ID]))
+		{
+			/** @var $am \CAssetManager */
+			$am=Yii::app()->GetAssetManager();
+			$cs->packages[self::PACKAGE_ID]=array(
+				'basePath'=>dirname(__FILE__).'/assets',
+				'baseUrl'=>$am->publish(dirname(__FILE__).'/assets',false,-1,YII_DEBUG),
+				'js'=>array('redactor'.(YII_DEBUG ? '' : '.min').'.js',),'css'=>array('css/redactor.css',),
+				'depends'=>array('jquery',),
+			);
+		}
+		$cs->registerPackage(self::PACKAGE_ID);
+
 		$cs->registerScript(
 			__CLASS__.'#'.$this->getId(),
-			'jQuery('.CJavaScript::encode('#'.$this->getId()).').redactor('.CJavaScript::encode($this->options).');',
+			'jQuery('.CJavaScript::encode($this->selector).').redactor('.CJavaScript::encode($this->options).');',
 			CClientScript::POS_READY
 		);
 	}
