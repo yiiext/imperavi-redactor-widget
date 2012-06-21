@@ -109,6 +109,8 @@ class ImperaviRedactorWidget extends \CInputWidget
 		}
 		$cs->registerPackage(self::PACKAGE_ID);
 
+		$this->options['path'] = $cs->packages[self::PACKAGE_ID]['baseUrl'];
+
 		$cs->registerScript(
 			__CLASS__.'#'.$this->getId(),
 			'jQuery('.CJavaScript::encode($this->selector).').redactor('.CJavaScript::encode($this->options).');',
