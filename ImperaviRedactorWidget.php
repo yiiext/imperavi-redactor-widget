@@ -52,11 +52,11 @@ class ImperaviRedactorWidget extends \CInputWidget
 	/**
 	 * Assets package ID.
 	 */
-	const PACKAGE_ID='imperavi-redactor';
+	const PACKAGE_ID = 'imperavi-redactor';
 	/**
 	 * @var array {@link http://redactorjs.com/docs redactor options}.
 	 */
-	public $options=array();
+	public $options = array();
 	/**
 	 * @var string|null The textarea selector. If it null, will be render the textarea.
 	 * Defaults to null.
@@ -70,19 +70,15 @@ class ImperaviRedactorWidget extends \CInputWidget
 	{
 		parent::init();
 
-		if($this->selector===null)
-		{
-			list($this->name,$this->id)=$this->resolveNameId();
-			$this->selector='#'.$this->id;
+		if($this->selector === null) {
+			list($this->name, $this->id) = $this->resolveNameId();
+			$this->selector = '#' . $this->id;
 
-			if($this->hasModel())
-			{
-				echo CHtml::activeTextArea($this->model,$this->attribute,$this->htmlOptions);
-			}
-			else
-			{
-				$this->htmlOptions['id']=$this->id;
-				echo CHtml::textArea($this->name,$this->value,$this->htmlOptions);
+			if($this->hasModel()) {
+				echo CHtml::activeTextArea($this->model, $this->attribute, $this->htmlOptions);
+			} else {
+				$this->htmlOptions['id'] = $this->id;
+				echo CHtml::textArea($this->name, $this->value, $this->htmlOptions);
 			}
 		}
 
@@ -95,23 +91,27 @@ class ImperaviRedactorWidget extends \CInputWidget
 	protected function registerClientScript()
 	{
 		/** @var $cs \CClientScript */
-		$cs=Yii::app()->getClientScript();
-		if(!isset($cs->packages[self::PACKAGE_ID]))
-		{
+		$cs = Yii::app()->getClientScript();
+		if(!isset($cs->packages[self::PACKAGE_ID])) {
 			/** @var $am \CAssetManager */
-			$am=Yii::app()->GetAssetManager();
-			$cs->packages[self::PACKAGE_ID]=array(
-				'basePath'=>dirname(__FILE__).'/assets',
-				'baseUrl'=>$am->publish(dirname(__FILE__).'/assets',false,-1,YII_DEBUG),
-				'js'=>array('redactor'.(YII_DEBUG ? '' : '.min').'.js',),'css'=>array('css/redactor.css',),
-				'depends'=>array('jquery',),
+			$am = Yii::app()->GetAssetManager();
+			$cs->packages[self::PACKAGE_ID] = array(
+				'basePath' => dirname(__FILE__) . '/assets',
+				'baseUrl' => $am->publish(dirname(__FILE__) . '/assets', false, -1, YII_DEBUG),
+				'js' => array('redactor' . (YII_DEBUG ? '' : '.min') . '.js',),
+				'css' => array('css/redactor.css',),
+				'depends' => array('jquery',),
 			);
 		}
 		$cs->registerPackage(self::PACKAGE_ID);
 
+		if(!isset($this->options['path'])) {
+			$this->options['path'] = $cs->packages[self::PACKAGE_ID]['baseUrl'];
+		}
+
 		$cs->registerScript(
-			__CLASS__.'#'.$this->getId(),
-			'jQuery('.CJavaScript::encode($this->selector).').redactor('.CJavaScript::encode($this->options).');',
+			__CLASS__ . '#' . $this->getId(),
+			'jQuery(' . CJavaScript::encode($this->selector) . ').redactor(' . CJavaScript::encode($this->options) . ');',
 			CClientScript::POS_READY
 		);
 	}
