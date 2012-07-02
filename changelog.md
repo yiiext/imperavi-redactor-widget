@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.6.1
+----------------
+- Imperavi redactor updated to version 7.7. Important to read [redactor changelog](http://redactorjs.com/log/) (Veaceslav Medvedev)
+
 0.6
 ----------------
 - Imperavi redactor updated to version 7.6.4 (Veaceslav Medvedev)

@@ -1,11 +1,12 @@
-var RLANG = {
+var RELANG = {};
+RELANG['fr'] = {
 	html: 'Code HTML',
 	video: 'Vidéo',
 	image: 'Image',
 	table: 'Tableau',
 	link: 'Lien URL',
-	link_insert: 'Insérer un lien',
-	unlink: 'Nétoyer le lien',
+	link_insert: 'Insérer/Modifier un lien',
+	unlink: 'Nettoyer le lien',
 	styles: 'Styles',
 	paragraph: 'Paragraphe',
 	quote: 'Citation',
@@ -21,7 +22,7 @@ var RLANG = {
 	strikethrough: 'Rayé',
 	fontcolor: 'Couleur du texte',
 	backcolor: 'Couleur du fond de ligne',
-	removeformat: 'Nétoyer le format',
+	removeformat: 'Nettoyer le format',
 	lists: 'Listes',
 	unorderedlist: 'Liste à puce',
 	orderedlist: 'Liste numérotée',
@@ -52,7 +53,7 @@ var RLANG = {
 	none: 'aucun',
 	left: 'à gauche',
 	right: 'à droite',
-	image_web_link: 'lien de l’image',
+	image_web_link: 'lien de l\'image',
 	text: 'Texte',
 	mailto: 'Envoyer à ',
 	web: 'URL',
@@ -63,12 +64,13 @@ var RLANG = {
 	choose: 'Choisir',
 	or_choose: 'ou',
 	drop_file_here: 'Glissez-déposez le fichier ici',
-	align_left:	'Aligenr à gauche',
+	align_left:	'Aligner à gauche',
 	align_center: 'Aligner au centre',
 	align_right: 'Aligner à droite',
 	align_justify: 'Justifier',
 	horizontalrule: 'Ligne horizontale',
 	fullscreen: 'Plein écran',
 	deleted: 'Supprimer',
-	none: 'aucun'
+	none: 'aucun',
+	anchor: 'Ancre'
 };

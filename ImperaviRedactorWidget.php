@@ -24,7 +24,7 @@
  *     'attribute'=>'my_field',
  *     // or just for input field
  *     'name'=>'my_input_name',
- *     // imperavi redactor {@link http://imperavi.ru/redactor/docs/ options}
+ *     // imperavi redactor {@link http://redactorjs.com/docs/ options}
  *     'options'=>array(
  *         'lang'=>'en',
  *         'toolbar'=>'mini',
@@ -37,13 +37,13 @@
  * $this->widget('ImperaviRedactorWidget',array(
  *     // the textarea selector
  *     'selector'=>'.redactor',
- *     // imperavi redactor {@link http://imperavi.ru/redactor/docs/ options}
+ *     // imperavi redactor {@link http://redactorjs.com/docs/ options}
  *     'options'=>array(),
  * ));
  * </pre>
  *
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
- * @version 0.5
+ * @version 0.61
  * @package yiiext.imperavi-redactor-widget
  * @link http://redactorjs.com
  */

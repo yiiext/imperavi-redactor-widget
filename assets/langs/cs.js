@@ -1,4 +1,5 @@
-var RLANG = {
+var RELANG = {};
+RELANG['cs'] = {
 	html: 'HTML',
 	video: 'Video',
 	image: 'Obrázek',
@@ -6,7 +7,7 @@ var RLANG = {
 	link: 'Odkaz',
 	link_insert: 'Vložit odkaz ...',
 	unlink: 'Odstranit odkaz',
-	styles: 'Styly',
+	formatting: 'Styly',
 	paragraph: 'Odstavec',
 	quote: 'Citace',
 	code: 'Kód',
@@ -22,7 +23,7 @@ var RLANG = {
 	fontcolor: 'Barva písma',
 	backcolor: 'Barva pozadí',
 	removeformat: 'Odstranit formátování',
-	cleanstyles: 'Odstranit styly',
+	cleanformatting: 'Odstranit styly',
 	lists: 'Seznamy',
 	unorderedlist: 'Seznam s odrážkami',
 	orderedlist: 'Číslovaný seznam',	

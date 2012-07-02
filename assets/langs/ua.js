@@ -1,4 +1,5 @@
-var RLANG = {
+var RELANG = {};
+RELANG['ua'] = {
 	html: 'Код',
 	video: 'Відео',
 	image: 'Зображення',
@@ -6,7 +7,7 @@ var RLANG = {
 	link: 'Посилання',
 	link_insert: 'Вставити посилання ...',
 	unlink: 'Видалити посилання',
-	styles: 'Стилі',
+	formatting: 'Стилі',
 	paragraph: 'Звичайний текст',
 	quote: 'Цитата',
 	code: 'Код',
@@ -14,23 +15,14 @@ var RLANG = {
 	header2: 'Заголовок 2',
 	header3: 'Заголовок 3',
 	header4: 'Заголовок 4',		
-	format: 'Формат',
 	bold:  'Жирний',
 	italic: 'Похилий',
-	superscript: 'Надрядковий',
-	strikethrough: 'Закреслений',
 	fontcolor: 'Колір тексту',
 	backcolor: 'Заливка тексту',
-	removeformat: 'Видалити формат',
-	cleanstyles: 'Видалити стилі MS Word',
-	lists: 'Списки',
 	unorderedlist: 'Звичайний список',
 	orderedlist: 'Нумерований список',	
 	outdent: 'Зменшити відступ',
 	indent: 'Збільшити відступ',
-	redo: 'Повтор',
-	undo: 'Скасування',
-	cut: 'Кат / Врізка',
 	cancel: 'Скасувати',	
 	insert: 'Вставити',
 	save: 'Зберегти',	
@@ -43,8 +35,8 @@ var RLANG = {
 	delete_column: 'Видалити стовпець',									
 	delete_row: 'Видалити рядок',									
 	delete_table: 'Видалити таблицю',
-	Rows: 'Рядки',
-	Columns: 'Стовпці',	
+	rows: 'Рядки',
+	columns: 'Стовпці',	
 	add_head: 'Додати заголовок',
 	delete_head: 'Видалити заголовок',	
 	title: 'Підказка',
@@ -71,5 +63,5 @@ var RLANG = {
 	horizontalrule: 'Горизонтальная линейка',
 	fullscreen: 'Во весь экран',
 	deleted: 'Зачеркнутый',
-	none: 'Нет'							
+    anchor: 'Anchor'					
 };
