@@ -43,7 +43,7 @@
  * </pre>
  *
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
- * @version 0.61
+ * @version 0.6.2
  * @package yiiext.imperavi-redactor-widget
  * @link http://redactorjs.com
  */

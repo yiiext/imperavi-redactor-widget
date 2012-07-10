@@ -66,6 +66,7 @@ body .redactor_box_fullscreen {
 	background: linear-gradient(top,  #f5f5f5 0%,#ddd 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f5f5f5', endColorstr='#dddddd',GradientType=0 );
 	overflow: hidden;	
+	height: 33px;
 	border-bottom: 1px solid #bbb;
 }
 .redactor_toolbar li {
