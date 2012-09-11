@@ -27,8 +27,6 @@
  *     // imperavi redactor {@link http://redactorjs.com/docs/ options}
  *     'options'=>array(
  *         'lang'=>'en',
- *         'toolbar'=>'mini',
- *         'css'=>'wym.css',
  *     ),
  * ));
  * </pre>
@@ -43,7 +41,7 @@
  * </pre>
  *
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
- * @version 0.6.2
+ * @version 0.7
  * @package yiiext.imperavi-redactor-widget
  * @link http://redactorjs.com
  */
@@ -70,15 +68,15 @@ class ImperaviRedactorWidget extends \CInputWidget
 	{
 		parent::init();
 
-		if($this->selector === null) {
+		if ($this->selector === null) {
 			list($this->name, $this->id) = $this->resolveNameId();
 			$this->selector = '#' . $this->id;
 
-			if($this->hasModel()) {
-				echo CHtml::activeTextArea($this->model, $this->attribute, $this->htmlOptions);
+			if ($this->hasModel()) {
+				echo \CHtml::activeTextArea($this->model, $this->attribute, $this->htmlOptions);
 			} else {
 				$this->htmlOptions['id'] = $this->id;
-				echo CHtml::textArea($this->name, $this->value, $this->htmlOptions);
+				echo \CHtml::textArea($this->name, $this->value, $this->htmlOptions);
 			}
 		}
 
@@ -91,28 +89,30 @@ class ImperaviRedactorWidget extends \CInputWidget
 	protected function registerClientScript()
 	{
 		/** @var $cs \CClientScript */
-		$cs = Yii::app()->getClientScript();
-		if(!isset($cs->packages[self::PACKAGE_ID])) {
+		$cs = Yii::app()->clientScript;
+		if (!isset($cs->packages[self::PACKAGE_ID])) {
 			/** @var $am \CAssetManager */
-			$am = Yii::app()->GetAssetManager();
+			$am = Yii::app()->assetManager;
 			$cs->packages[self::PACKAGE_ID] = array(
 				'basePath' => dirname(__FILE__) . '/assets',
-				'baseUrl' => $am->publish(dirname(__FILE__) . '/assets', false, -1, YII_DEBUG),
-				'js' => array('redactor' . (YII_DEBUG ? '' : '.min') . '.js',),
-				'css' => array('css/redactor.css',),
-				'depends' => array('jquery',),
+				'baseUrl' => $am->publish(dirname(__FILE__) . '/assets'),
+				'js' => array(
+					'redactor' . (YII_DEBUG ? '' : '.min') . '.js',
+				),
+				'css' => array(
+					'redactor.css',
+				),
+				'depends' => array(
+					'jquery',
+				),
 			);
 		}
 		$cs->registerPackage(self::PACKAGE_ID);
 
-		if(!isset($this->options['path'])) {
-			$this->options['path'] = $cs->packages[self::PACKAGE_ID]['baseUrl'];
-		}
-
 		$cs->registerScript(
-			__CLASS__ . '#' . $this->getId(),
-			'jQuery(' . CJavaScript::encode($this->selector) . ').redactor(' . CJavaScript::encode($this->options) . ');',
-			CClientScript::POS_READY
+			__CLASS__ . '#' . $this->id,
+			'jQuery(' . \CJavaScript::encode($this->selector) . ').redactor(' . \CJavaScript::encode($this->options) . ');',
+			\CClientScript::POS_READY
 		);
 	}
 }
