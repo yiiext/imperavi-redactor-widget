@@ -3,7 +3,7 @@
  * ImperaviRedactorWidget class file.
  *
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
- * @authro Alexander Makarov <sam@rmcreative.ru>
+ * @author Alexander Makarov <sam@rmcreative.ru>
  *
  * @version 1.0
  *
@@ -78,7 +78,7 @@ class ImperaviRedactorWidget extends \CInputWidget
 		$cs->registerPackage(self::PACKAGE_ID);
 
 		$cs->registerScript(
-			get_class($this) . '#' . $this->id,
+			$this->id,
 			'jQuery(' . CJavaScript::encode($this->selector) . ').redactor(' . CJavaScript::encode($this->options) . ');',
 			CClientScript::POS_READY
 		);
