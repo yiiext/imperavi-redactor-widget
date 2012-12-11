@@ -1,39 +1,48 @@
-ImperaviRedactorWidget
-=======================
+Imperavi Redactor Widget
+========================
 
-ImperaviRedactorWidget wrapper around [Fantastic WYSIWYG-editor on jQuery](http://redactorjs.com).
+`ImperaviRedactorWidget` is a wrapper for [Imperavi Redactor](http://imperavi.com/redactor/),
+a high quality WYSIWYG editor.
+
+Note that Imperavi Redactor itself is a proprietary commercial copyrighted software
+but since Yii community bought OEM license you can use it for free with Yii.
 
 Usage
-------------
+-----
 
-First, import the class file
-~~~
+First, import the widget class file
+
+```php
 Yii::import('ext.imperavi-redactor-widget.ImperaviRedactorWidget');
-~~~
+```
 
-Next, render the textarea and create it into redactor
-~~~
-$this->widget('ImperaviRedactorWidget',array(
+Next, call the widget:
+
+```php
+$this->widget('ImperaviRedactorWidget', array(
 	// you can either use it for model attribute
 	'model'=>$my_model,
 	'attribute'=>'my_field',
+
 	// or just for input field
 	'name'=>'my_input_name',
-	// imperavi redactor {@link http://redactorjs.com/docs/ options}
+
+	// some options, see http://imperavi.com/redactor/docs/
 	'options'=>array(
 		'lang'=>'en',
 		'toolbar'=>'mini',
 		'css'=>'wym.css',
 	),
 ));
-~~~
+```
 
-Or create redactor from textarea by selector
-~~~
+Alternatively you can attach Redactor to already existing DOM element by calling:
+
+```php
 $this->widget('ImperaviRedactorWidget',array(
 	// the textarea selector
 	'selector'=>'.redactor',
-	// imperavi redactor {@link http://redactorjs.com/docs/ options}
+	// some options, see http://imperavi.com/redactor/docs/
 	'options'=>array(),
 ));
-~~~
+```
