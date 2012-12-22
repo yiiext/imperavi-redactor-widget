@@ -1,8 +1,8 @@
 Changelog
 =========
 
-1.1 *December 22, 2012*
-----------------------
+1.1
+---
 
 - Implement redactor plugins (Veaceslav Medvedev)
 - Add multi-language support (Veaceslav Medvedev)
@@ -15,8 +15,8 @@ Changelog
 - Imperavi redactor updated to 8.2.1 (samdark)
 - Cleaned up docs and code (samdark)
 
-0.7 (2012-09-11)
-----------------
+0.7
+---
 
 - Imperavi redactor updated to version 8.0.3. (Veaceslav Medvedev)
 
