@@ -1,9 +1,10 @@
 Changelog
 =========
 
-1.1 *work in progress*
+1.1 *December 22, 2012*
 ----------------------
 
+- Implement redactor plugins (Veaceslav Medvedev)
 - Add multi-language support (Veaceslav Medvedev)
 - Scripts package now configurable ImperaviRedactorWidget::$package (Veaceslav Medvedev)
 

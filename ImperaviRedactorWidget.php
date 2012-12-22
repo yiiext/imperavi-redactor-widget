@@ -4,6 +4,7 @@
  *
  * @property string $assetsPath
  * @property string $assetsUrl
+ * @property array $plugins
  *
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
  * @author Alexander Makarov <sam@rmcreative.ru>
@@ -37,6 +38,11 @@ class ImperaviRedactorWidget extends CInputWidget
 	 * @var array
 	 */
 	public $package = array();
+
+	/**
+	 * @var array
+	 */
+	private $_plugins = array();
 
 	/**
 	 * Init widget.
@@ -92,6 +98,12 @@ class ImperaviRedactorWidget extends CInputWidget
 				'jQuery(' . CJavaScript::encode($this->selector) . ').redactor(' . CJavaScript::encode($this->options) . ');',
 				CClientScript::POS_READY
 			);
+
+		foreach ($this->plugins as $id => $plugin) {
+			Yii::app()->clientScript
+				->addPackage(self::PACKAGE_ID . '-' . $id, $plugin)
+				->registerPackage(self::PACKAGE_ID . '-' . $id);
+		}
 	}
 
 	/**
@@ -110,5 +122,31 @@ class ImperaviRedactorWidget extends CInputWidget
 	public function getAssetsUrl()
 	{
 		return Yii::app()->assetManager->publish($this->assetsPath);
+	}
+
+	/**
+	 * @param array $plugins
+	 */
+	public function setPlugins(array $plugins)
+	{
+		if (count($plugins) > 0 && !isset($this->options['plugins'])) {
+			$this->options['plugins'] = array();
+		}
+
+		foreach ($plugins as $id => $plugin) {
+			if (!isset($plugin['baseUrl']) && !isset($plugin['basePath'])) {
+				$plugin['baseUrl'] = $this->assetsUrl . '/plugins/' . $id;
+			}
+			$this->_plugins[$id] = $plugin;
+			$this->options['plugins'][] = $id;
+		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getPlugins()
+	{
+		return $this->_plugins;
 	}
 }
