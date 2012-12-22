@@ -4,6 +4,7 @@ Changelog
 1.1 *work in progress*
 ----------------------
 
+- Add multi-language support (Veaceslav Medvedev)
 - Scripts package now configurable ImperaviRedactorWidget::$package (Veaceslav Medvedev)
 
 1.0

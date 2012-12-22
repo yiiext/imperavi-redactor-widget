@@ -71,6 +71,11 @@ class ImperaviRedactorWidget extends CInputWidget
 			),
 		);
 
+		// Prepend language file to scripts package.
+		if (isset($this->options['lang'])) {
+			array_unshift($this->package['js'], '/langs/' . $this->options['lang'] . '.js');
+		}
+
 		$this->registerClientScript();
 	}
 
