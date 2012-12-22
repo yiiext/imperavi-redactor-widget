@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.1 *work in progress*
+----------------------
+
+- Scripts package now configurable ImperaviRedactorWidget::$package (Veaceslav Medvedev)
+
 1.0
 ---
 
