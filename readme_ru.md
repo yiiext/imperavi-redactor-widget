@@ -47,3 +47,40 @@ $this->widget('ImperaviRedactorWidget',array(
 	'options'=>array(),
 ));
 ```
+
+Для локализации редактора нужно скачать необходимый языковой файл c
+[сайта разработчиков](http://imperavi.com/redactor/docs/languages/),
+скопировать его, например, в папку assets, и подключить скрипт на страницу.
+
+```php
+$this->widget('ImperaviRedactorWidget',array(
+	'model'=>$model,
+	'attribute'=>'fieldname',
+	'options'=>array(
+		'lang'=>'ru',
+	),
+));
+$cs=Yii::app()->clientScript;
+// Путь до protected/extensions/imperavi-redactor-widget/assets
+$baseUrl=$cs->packages[ImperaviRedactorWidget::PACKAGE_ID]['baseUrl'];
+$cs->registerScriptFile($baseUrl.'/ru.js');
+```
+
+Способ подключения дополнительных плагинов мало чем отличается от подключения
+языковых файлов. Копируем js-файл плагина в assets и подключаем его. Некоторые
+плагины можно скачать на [сайта разработчиков](http://imperavi.com/redactor/docs/plugins/).
+
+```php
+$this->widget('ImperaviRedactorWidget',array(
+	'model'=>$model,
+	'attribute'=>'fieldname',
+	'options'=>array(
+		'lang'=>'ru',
+		'plugins'=>array('fullscreen'),
+	),
+));
+$cs=Yii::app()->clientScript;
+$baseUrl=$cs->packages[ImperaviRedactorWidget::PACKAGE_ID]['baseUrl'];
+$cs->registerScriptFile($baseUrl.'/ru.js');
+$cs->registerScriptFile($baseUrl.'/fullscreen.js');
+```
