@@ -50,7 +50,7 @@ $this->widget('ImperaviRedactorWidget',array(
 
 Для локализации редактора нужно скачать необходимый языковой файл c
 [сайта разработчиков](http://imperavi.com/redactor/docs/languages/),
-скопировать его, например, в папку assets, и подключить скрипт на страницу.
+скопировать его, например, в папку `assets`, и подключить скрипт на страницу.
 
 ```php
 $this->widget('ImperaviRedactorWidget',array(
@@ -67,8 +67,8 @@ $cs->registerScriptFile($baseUrl.'/ru.js');
 ```
 
 Способ подключения дополнительных плагинов мало чем отличается от подключения
-языковых файлов. Копируем js-файл плагина в assets и подключаем его. Некоторые
-плагины можно скачать на [сайта разработчиков](http://imperavi.com/redactor/docs/plugins/).
+языковых файлов. Копируем js-файл плагина в `assets` и подключаем его. Некоторые
+плагины можно скачать на [сайте разработчиков](http://imperavi.com/redactor/docs/plugins/).
 
 ```php
 $this->widget('ImperaviRedactorWidget',array(
