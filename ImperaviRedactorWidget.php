@@ -36,6 +36,7 @@ class ImperaviRedactorWidget extends CInputWidget
 
 	/**
 	 * @var array
+	 * @deprecated 1.1 From version 1.1 package can't be change.
 	 */
 	public $package = array();
 
