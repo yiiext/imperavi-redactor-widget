@@ -30,7 +30,7 @@ $this->widget('ImperaviRedactorWidget', array(
 	// some options, see http://imperavi.com/redactor/docs/
 	'options' => array(
 		'lang' => 'ru',
-		'toolbar' = false,
+		'toolbar' => false,
 		'iframe' => true,
 		'css' => 'wym.css',
 	),
