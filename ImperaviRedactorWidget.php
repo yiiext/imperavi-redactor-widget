@@ -15,7 +15,6 @@
  * @link http://imperavi.com/redactor
  * @license https://github.com/yiiext/imperavi-redactor-widget/blob/master/license.md
  */
-defined('__DIR__') or define('__DIR__', dirname(__FILE__));
 class ImperaviRedactorWidget extends CInputWidget
 {
 	/**
@@ -114,7 +113,7 @@ class ImperaviRedactorWidget extends CInputWidget
 	 */
 	public function getAssetsPath()
 	{
-		return __DIR__ . '/assets';
+		return  dirname(__FILE__) . '/assets';
 	}
 
 	/**
