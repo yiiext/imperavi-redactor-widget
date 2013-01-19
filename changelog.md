@@ -1,12 +1,17 @@
 Changelog
 =========
 
+1.2
+---
+
+- Imperavi redactor updated to 8.2.2 (samdark)
+
 1.1
 ---
 
-- Implement redactor plugins (Veaceslav Medvedev)
-- Add multi-language support (Veaceslav Medvedev)
-- Scripts package now configurable ImperaviRedactorWidget::$package (Veaceslav Medvedev)
+- Implemented redactor plugins (Veaceslav Medvedev)
+- Added multi-language support (Veaceslav Medvedev)
+- Script packages are now configurable via ImperaviRedactorWidget::$package (Veaceslav Medvedev)
 
 1.0
 ---
