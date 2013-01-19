@@ -68,7 +68,7 @@ class ImperaviRedactorWidget extends CInputWidget
 		$this->package = array(
 			'baseUrl' => $this->assetsUrl,
 			'js' => array(
-				'redactor' . (YII_DEBUG ? '' : '.min') . '.js',
+				YII_DEBUG ? 'redactor.js' : 'redactor.min.js',
 			),
 			'css' => array(
 				'redactor.css',
