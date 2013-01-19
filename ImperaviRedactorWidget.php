@@ -53,7 +53,7 @@ class ImperaviRedactorWidget extends CInputWidget
 		parent::init();
 
 		if ($this->selector === null) {
-			list($this->name, $this->id) = $this->resolveNameId();
+			list($this->name, $this->id) = $this->resolveNameID();
 			$this->selector = '#' . $this->id;
 
 			if ($this->hasModel()) {
