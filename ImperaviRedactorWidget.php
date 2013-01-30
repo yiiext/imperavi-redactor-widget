@@ -57,6 +57,7 @@ class ImperaviRedactorWidget extends CInputWidget
 			$this->selector = '#' . $this->id;
 
 			if ($this->hasModel()) {
+				$this->selector = '#' .CHtml::getIdByName(CHtml::resolveName($this->model, $this->attribute));
 				echo CHtml::activeTextArea($this->model, $this->attribute, $this->htmlOptions);
 			} else {
 				$this->htmlOptions['id'] = $this->id;
