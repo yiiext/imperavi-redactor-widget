@@ -18,7 +18,10 @@
  *          'attribute' => 'redactorArea',
  *
  *          'options' => array(
- *              'imageUpload'=>$this->createUrl('imgUpload'), // place here route to your ImageUploadAction
+ *              // place here route to your ImageUploadAction
+ *              'imageUpload'=>$this->createUrl('imgUpload'),
+ *              // alert user if image upload was failed
+ *              'imageUploadErrorCallback'=>'js:function(obj, json){ alert(json.error); }',
  *
  *              // additional field if you have csrf request validation enabled
  *              'uploadFields'=>array(
@@ -40,9 +43,6 @@ class ImageUploadAction extends CAction
 
     public function run()
     {
-        if (Yii::app()->user->isGuest)
-            throw new CHttpException(403);
-
         $dir = $this->directory;
 
         $_FILES['file']['type'] = strtolower($_FILES['file']['type']);
@@ -76,7 +76,6 @@ class ImageUploadAction extends CAction
                 mkdir(Yii::getPathOfAlias('webroot') . $dstDir, 0777, true);
             }
 
-
             $file = $dstDir . $id . $ext;
 
             copy($_FILES['file']['tmp_name'], Yii::getPathOfAlias('webroot') . $file);
@@ -86,8 +85,7 @@ class ImageUploadAction extends CAction
             echo CJSON::encode($array);
         } else {
             echo CJSON::encode(array(
-                "error" => "Wrong file type",
-                "anothermessage" => "Mime-type \"" . $_FILES['file']['type'] . "\" is not allowed",
+                "error" => Yii::t('imperavi-redactor-widget.main',"Wrong file type"),
             ));
         }
     }
