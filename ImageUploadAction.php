@@ -4,38 +4,7 @@
  *
  * @author Bogdan Savluk <savluk.bogdan@gmail.com>
  *
- * Example of use:
- *  1. add it to your conroller actions()
- *      'imgUpload'=>array(
- *          'class'=>'ext.imperavi-redactor-widget.ImageUploadAction',
- *          'directory' => 'uploads/redactor'
- *          'validator'=>array(
- *              'mimeTypes' => array('image/png', 'image/jpg', 'image/gif', 'image/jpeg', 'image/pjpeg')
- *              // Add uploads validation by mimeType, (Any other CFileValidator options are also available)
- *          )
- *      ),
- *
- *  2. render your widget specifying url and options for upload
- *
- *      $this->widget('ext.imperavi-redactor-widget.ImperaviRedactorWidget', array(
- *          'model' => $model,
- *          'attribute' => 'redactorArea',
- *
- *          'options' => array(
- *              // place here route to your ImageUploadAction
- *              'imageUpload'=>$this->createUrl('imgUpload'),
- *              // alert user if image upload was failed
- *              'imageUploadErrorCallback'=>'js:function(obj, json){ alert(json.error); }',
- *
- *              // additional field if you have csrf request validation enabled
- *              'uploadFields'=>array(
- *                  Yii::app()->request->csrfTokenName => Yii::app()->request->csrfToken,
- *              ),
- *          ),
- *
- *      ));
- *
- *
+ * For examples see image_upload_readme.md
  */
 class ImageUploadAction extends CAction
 {
@@ -48,7 +17,7 @@ class ImageUploadAction extends CAction
 
     /**
      * Callback for function to implement own saving mechanism
-     * The only argument passed to callback is CUploadedFile
+     * The only argument passed to callback is CUploadedFile, callback should return url to file
      * @var callable
      */
     public $saveCallback;
