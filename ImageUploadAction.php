@@ -44,11 +44,16 @@ class ImageUploadAction extends CAction
      * Should be either string or callback that will return it
      * @var string
      */
-    public $directory = 'uploads/redactor';
+    public $directory;
 
+    /**
+     * Callback for function to implement own saving mechanism
+     * The only argument passed to callback is CUploadedFile
+     * @var callable
+     */
+    public $saveCallback;
 
-    private $_validator = array(
-        // default options
+    private $_validator = array( // default options
     );
 
     public function getValidator()
@@ -61,21 +66,50 @@ class ImageUploadAction extends CAction
         $this->_validator = array_merge($this->_validator, $v);
     }
 
-    public function run()
+    /**
+     * Function used to save image by default
+     * @param CUploadedFile $file
+     * @return string
+     * @throws CException
+     */
+    public function save($file)
     {
-
         if (is_string($this->directory)) {
             $dir = $this->directory;
         } elseif (is_callable($this->directory, true)) {
             $dir = call_user_func($this->directory);
-        } else
-            throw new CException(Yii::t('imperavi-redactor-widget.main', '$directory property should be set'));
+        } else {
+            throw new CException(Yii::t('imperavi-redactor-widget.main', '$directory property, should be either string or callable'));
+        }
 
+        $webroot = Yii::getPathOfAlias('webroot');
+
+        $id = time();
+        $sub = substr($id, -2);
+        $id = substr($id, 0, -2);
+        $dstDir = '/' . $dir . '/' . $sub . '/';
+        if (!is_dir($webroot . $dstDir)) {
+            mkdir($webroot . $dstDir, 0777, true);
+        }
+
+        $filePath = $dstDir . $id . $file->extensionName;
+        $file->saveAs($webroot . $filePath);
+        return $filePath;
+    }
+
+    public function run()
+    {
+        if (isset($this->saveCallback) && is_callable($this->saveCallback)) {
+            $save = $this->saveCallback;
+        } elseif (isset($this->directory)) {
+            $save = array($this, 'save');
+        } else
+            throw new CException(Yii::t('imperavi-redactor-widget.main', 'Either $directory property, or $saveCallback should be set'));
         $uploadModel = new UploadedImage($this->validator);
         $uploadModel->file = CUploadedFile::getInstanceByName('file');
 
         if ($uploadModel->validate()) {
-            $fileLink = $uploadModel->save($dir);
+            $fileLink = call_user_func($save, $uploadModel->file);
             echo CJSON::encode(array(
                 'filelink' => $fileLink,
             ));
@@ -118,22 +152,4 @@ class UploadedImage extends CModel
             $validator,
         );
     }
-
-    public function save($dir)
-    {
-        $webroot = Yii::getPathOfAlias('webroot');
-
-        $id = time();
-        $sub = substr($id, -2);
-        $id = substr($id, 0, -2);
-        $dstDir = '/' . $dir . '/' . $sub . '/';
-        if (!is_dir($webroot . $dstDir)) {
-            mkdir($webroot . $dstDir, 0777, true);
-        }
-
-        $filePath = $dstDir . $id . $this->file->extensionName;
-        $this->file->saveAs($webroot . $filePath);
-        return $filePath;
-    }
-
 }
