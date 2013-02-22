@@ -8,7 +8,11 @@
  *  1. add it to your conroller actions()
  *      'imgUpload'=>array(
  *          'class'=>'ext.imperavi-redactor-widget.ImageUploadAction',
- *          'directory = 'uploads/redactor'
+ *          'directory' => 'uploads/redactor'
+ *          'validator'=>array(
+ *              'mimeTypes' => array('image/png', 'image/jpg', 'image/gif', 'image/jpeg', 'image/pjpeg')
+ *              // Add uploads validation by mimeType, (Any other CFileValidator options are also available)
+ *          )
  *      ),
  *
  *  2. render your widget specifying url and options for upload
@@ -42,6 +46,21 @@ class ImageUploadAction extends CAction
      */
     public $directory = 'uploads/redactor';
 
+
+    private $_validator = array(
+        // default options
+    );
+
+    public function getValidator()
+    {
+        return $this->_validator;
+    }
+
+    public function setValidator($v)
+    {
+        $this->_validator = array_merge($this->_validator, $v);
+    }
+
     public function run()
     {
 
@@ -50,50 +69,71 @@ class ImageUploadAction extends CAction
         } elseif (is_callable($this->directory, true)) {
             $dir = call_user_func($this->directory);
         } else
-            throw new CException('$directory property should be set');
+            throw new CException(Yii::t('imperavi-redactor-widget.main', '$directory property should be set'));
 
-        $_FILES['file']['type'] = strtolower($_FILES['file']['type']);
+        $uploadModel = new UploadedImage($this->validator);
+        $uploadModel->file = CUploadedFile::getInstanceByName('file');
 
-        $ext = null;
-
-        switch ($_FILES['file']['type']) {
-            case 'image/png':
-                $ext = '.png';
-                break;
-            case 'image/jpg':
-                $ext = '.jpg';
-                break;
-            case 'image/gif':
-                $ext = '.gif';
-                break;
-            case 'image/jpeg':
-                $ext = '.jpg';
-                break;
-            case 'image/pjpeg':
-                $ext = '.jpg';
-                break;
-        }
-
-        if (isset($ext)) {
-            $id = time();
-            $sub = substr($id, -2);
-            $id = substr($id, 0, -2);
-            $dstDir = '/' . $dir . '/' . $sub . '/';
-            if (!is_dir(Yii::getPathOfAlias('webroot') . $dstDir)) {
-                mkdir(Yii::getPathOfAlias('webroot') . $dstDir, 0777, true);
-            }
-
-            $file = $dstDir . $id . $ext;
-
-            move_uploaded_file($_FILES['file']['tmp_name'], Yii::getPathOfAlias('webroot') . $file);
-            $array = array(
-                'filelink' => Yii::app()->request->baseUrl . $file,
-            );
-            echo CJSON::encode($array);
+        if ($uploadModel->validate()) {
+            $fileLink = $uploadModel->save($dir);
+            echo CJSON::encode(array(
+                'filelink' => $fileLink,
+            ));
         } else {
             echo CJSON::encode(array(
-                "error" => Yii::t('imperavi-redactor-widget.main', "Wrong file type"),
+                "error" => $uploadModel->getErrors('file'),
             ));
         }
     }
+}
+
+class UploadedImage extends CModel
+{
+    protected $validator;
+
+    /** @var CUploadedFile */
+    public $file;
+
+    /**
+     * Returns the list of attribute names of the model.
+     * @return array list of attribute names.
+     */
+    public function attributeNames()
+    {
+        return array(
+            'file' => Yii::t('imperavi-redactor-widget.main', "File"),
+        );
+    }
+
+    function __construct($validator = array())
+    {
+        $this->validator = $validator;
+    }
+
+    public function rules()
+    {
+        $validator = array('file', 'file') + $this->validator;
+
+        return array(
+            $validator,
+        );
+    }
+
+    public function save($dir)
+    {
+        $webroot = Yii::getPathOfAlias('webroot');
+
+        $id = time();
+        $sub = substr($id, -2);
+        $id = substr($id, 0, -2);
+        $dstDir = '/' . $dir . '/' . $sub . '/';
+        if (!is_dir($webroot . $dstDir)) {
+            mkdir($webroot . $dstDir, 0777, true);
+        }
+
+        $filePath = $dstDir . $id . $this->file->extensionName;
+        $this->file->saveAs($webroot . $filePath);
+        return $filePath;
+    }
+
 }
