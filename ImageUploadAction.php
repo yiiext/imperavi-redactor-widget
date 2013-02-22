@@ -37,13 +37,20 @@ class ImageUploadAction extends CAction
 {
     /**
      * Path to directory where to save uploaded files(relative path from webroot)
+     * Should be either string or callback that will return it
      * @var string
      */
     public $directory = 'uploads/redactor';
 
     public function run()
     {
-        $dir = $this->directory;
+
+        if (is_string($this->directory)) {
+            $dir = $this->directory;
+        } elseif (is_callable($this->directory, true)) {
+            $dir = call_user_func($this->directory);
+        } else
+            throw new CException('$directory property should be set');
 
         $_FILES['file']['type'] = strtolower($_FILES['file']['type']);
 
@@ -78,14 +85,14 @@ class ImageUploadAction extends CAction
 
             $file = $dstDir . $id . $ext;
 
-            copy($_FILES['file']['tmp_name'], Yii::getPathOfAlias('webroot') . $file);
+            move_uploaded_file($_FILES['file']['tmp_name'], Yii::getPathOfAlias('webroot') . $file);
             $array = array(
                 'filelink' => Yii::app()->request->baseUrl . $file,
             );
             echo CJSON::encode($array);
         } else {
             echo CJSON::encode(array(
-                "error" => Yii::t('imperavi-redactor-widget.main',"Wrong file type"),
+                "error" => Yii::t('imperavi-redactor-widget.main', "Wrong file type"),
             ));
         }
     }
