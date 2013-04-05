@@ -1,6 +1,6 @@
 /*
-	Redactor v8.2.3
-	Updated: March 6, 2013
+	Redactor v8.2.5
+	Updated: April 2, 2013
 
 	http://redactorjs.com/
 
@@ -704,7 +704,7 @@ var RLANG = {
 					if (arr[0] < 536) oldsafari = true;
 				}
 
-				if (this.isMobile(true) === false && oldsafari === false)
+				if (this.isMobile(true) === false && oldsafari === false && this.browser('opera') === false)
 				{
 					this.$editor.bind('paste', $.proxy(function(e)
 					{
@@ -736,6 +736,7 @@ var RLANG = {
 							this.restoreSelection();
 
 							var html = this.getFragmentHtml(pastedFrag);
+
 							this.pasteCleanUp(html);
 							this.pasteRunning = false;
 
@@ -3099,7 +3100,17 @@ var RLANG = {
 		},
 		imageDelete: function(el)
 		{
-			$(el).remove();
+			var parent = $(el).parent();
+			if (parent.size() != 0 && parent[0].tagName == 'A')
+			{
+				// image's link remove
+				parent.remove();
+			}
+			else
+			{
+				$(el).remove();
+			}
+
 			this.modalClose();
 			this.syncCode();
 		},
