@@ -1,6 +1,6 @@
 /*
-	Redactor v8.2.5
-	Updated: April 2, 2013
+	Redactor v8.2.6
+	Updated: April 6, 2013
 
 	http://redactorjs.com/
 
@@ -627,6 +627,7 @@ var RLANG = {
 			// extend buttons
 			if (this.opts.air)
 			{
+				$.extend(this.opts.toolbar, this.opts.buttonsCustom);							
 				this.opts.buttons = this.opts.airButtons;
 			}
 			else if (this.opts.toolbar !== false)
