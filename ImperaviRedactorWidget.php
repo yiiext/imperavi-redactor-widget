@@ -63,20 +63,6 @@ class ImperaviRedactorWidget extends CInputWidget
 			}
 		}
 
-		// Default scripts package.
-		$this->package = array(
-			'baseUrl' => $this->assetsUrl,
-			'js' => array(
-				YII_DEBUG ? 'redactor.js' : 'redactor.min.js',
-			),
-			'css' => array(
-				'redactor.css',
-			),
-			'depends' => array(
-				'jquery',
-			),
-		);
-
 		// Append language file to scripts package.
 		if (isset($this->options['lang']) && $this->options['lang'] !== 'en') {
 			$this->package['js'][] = 'lang/' . $this->options['lang'] . '.js';
@@ -98,6 +84,20 @@ class ImperaviRedactorWidget extends CInputWidget
 		$clientScript = Yii::app()->clientScript;
 		$selector = CJavaScript::encode($this->selector);
 		$options = CJavaScript::encode($this->options);
+
+		// Prepare scripts package.
+		$this->package = array_merge(array(
+				'baseUrl' => $this->assetsUrl,
+				'js' => array(
+					YII_DEBUG ? 'redactor.js' : 'redactor.min.js',
+				),
+				'css' => array(
+					'redactor.css',
+				),
+				'depends' => array(
+					'jquery',
+				),
+			), $this->package);
 
 		$clientScript
 			->addPackage(self::PACKAGE_ID, $this->package)
