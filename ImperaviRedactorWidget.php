@@ -53,8 +53,8 @@ class ImperaviRedactorWidget extends CInputWidget
 
 		if ($this->selector === null) {
 			list($this->name, $this->id) = $this->resolveNameID();
-			$this->htmlOptions['id'] = $this->id;
-			$this->selector = '#' . $this->id;
+			$this->htmlOptions['id'] = $this->getId();
+			$this->selector = '#' . $this->getId();
 
 			if ($this->hasModel()) {
 				echo CHtml::activeTextArea($this->model, $this->attribute, $this->htmlOptions);
@@ -71,9 +71,9 @@ class ImperaviRedactorWidget extends CInputWidget
 	 */
 	protected function registerClientScript()
 	{
-		// Prepare scripts package.
+		// Prepare script package.
 		$this->package = array_merge(array(
-				'baseUrl' => $this->assetsUrl,
+				'baseUrl' => $this->getAssetsUrl(),
 				'js' => array(
 					YII_DEBUG ? 'redactor.js' : 'redactor.min.js',
 				),
@@ -85,7 +85,7 @@ class ImperaviRedactorWidget extends CInputWidget
 				),
 			), $this->package);
 
-		// Append language file to scripts package.
+		// Append language file to script package.
 		if (isset($this->options['lang']) && $this->options['lang'] !== 'en') {
 			$this->package['js'][] = 'lang/' . $this->options['lang'] . '.js';
 		}
@@ -107,7 +107,7 @@ class ImperaviRedactorWidget extends CInputWidget
 			$this->options['plugins'] = array_keys($this->_plugins);
 		}
 
-		$clientScript = Yii::app()->clientScript;
+		$clientScript = Yii::app()->getClientScript();
 		$selector = CJavaScript::encode($this->selector);
 		$options = CJavaScript::encode($this->options);
 
@@ -120,7 +120,7 @@ class ImperaviRedactorWidget extends CInputWidget
 				CClientScript::POS_READY
 			);
 
-		foreach ($this->plugins as $id => $plugin) {
+		foreach ($this->getPlugins() as $id => $plugin) {
 			$clientScript
 				->addPackage(self::PACKAGE_ID . '-' . $id, $plugin)
 				->registerPackage(self::PACKAGE_ID . '-' . $id);
@@ -142,7 +142,7 @@ class ImperaviRedactorWidget extends CInputWidget
 	 */
 	public function getAssetsUrl()
 	{
-		return Yii::app()->assetManager->publish($this->assetsPath);
+		return Yii::app()->getAssetManager()->publish($this->getAssetsPath());
 	}
 
 	/**
@@ -152,7 +152,7 @@ class ImperaviRedactorWidget extends CInputWidget
 	{
 		foreach ($plugins as $id => $plugin) {
 			if (!isset($plugin['baseUrl'], $plugin['basePath'])) {
-				$plugin['baseUrl'] = $this->assetsUrl . '/plugins/' . $id;
+				$plugin['baseUrl'] = $this->getAssetsUrl() . '/plugins/' . $id;
 			}
 
 			$this->_plugins[$id] = $plugin;
