@@ -81,6 +81,9 @@ class ImperaviRedactorWidget extends CInputWidget
 		/*if (isset($this->options['lang']) && 'en' !== $this->options['lang']) {
 			array_unshift($this->package['js'], 'lang/' . $this->options['lang'] . '.js');
 		}*/
+		if (isset($this->options['lang'])) {
+			unset($this->options['lang']);
+		}
 
 		$this->registerClientScript();
 	}
