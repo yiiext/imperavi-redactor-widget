@@ -63,11 +63,6 @@ class ImperaviRedactorWidget extends CInputWidget
 			}
 		}
 
-		// Append language file to scripts package.
-		if (isset($this->options['lang']) && $this->options['lang'] !== 'en') {
-			$this->package['js'][] = 'lang/' . $this->options['lang'] . '.js';
-		}
-
 		$this->registerClientScript();
 	}
 
@@ -76,15 +71,6 @@ class ImperaviRedactorWidget extends CInputWidget
 	 */
 	protected function registerClientScript()
 	{
-		// Insert plugins in options
-		if (!empty($this->_plugins)) {
-			$this->options['plugins'] = array_keys($this->_plugins);
-		}
-
-		$clientScript = Yii::app()->clientScript;
-		$selector = CJavaScript::encode($this->selector);
-		$options = CJavaScript::encode($this->options);
-
 		// Prepare scripts package.
 		$this->package = array_merge(array(
 				'baseUrl' => $this->assetsUrl,
@@ -98,6 +84,32 @@ class ImperaviRedactorWidget extends CInputWidget
 					'jquery',
 				),
 			), $this->package);
+
+		// Append language file to scripts package.
+		if (isset($this->options['lang']) && $this->options['lang'] !== 'en') {
+			$this->package['js'][] = 'lang/' . $this->options['lang'] . '.js';
+		}
+
+		// Add assets url to relative css.
+		if (isset($this->options['css'])) {
+			if (!is_array($this->options['css'])) {
+				$this->options['css'] = array($this->options['css']);
+			}
+			foreach ($this->options['css'] as $i => $css) {
+				if (strpos($css, '/') === false) {
+					$this->options['css'][$i] = $this->getAssetsUrl() . '/' . $css;
+				}
+			}
+		}
+
+		// Insert plugins in options
+		if (!empty($this->_plugins)) {
+			$this->options['plugins'] = array_keys($this->_plugins);
+		}
+
+		$clientScript = Yii::app()->clientScript;
+		$selector = CJavaScript::encode($this->selector);
+		$options = CJavaScript::encode($this->options);
 
 		$clientScript
 			->addPackage(self::PACKAGE_ID, $this->package)
