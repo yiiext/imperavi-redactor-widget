@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.4
+-----
+
+- Imperavi redactor updated to 9.0 (Veaceslav Medvedev)
+
 1.2.3
 -----
 

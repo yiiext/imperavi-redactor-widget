@@ -9,7 +9,7 @@
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
  * @author Alexander Makarov <sam@rmcreative.ru>
  *
- * @version 1.2.3
+ * @version 1.2.4
  *
  * @link https://github.com/yiiext/imperavi-redactor-widget
  * @link http://imperavi.com/redactor
@@ -36,7 +36,6 @@ class ImperaviRedactorWidget extends CInputWidget
 
 	/**
 	 * @var array
-	 * @deprecated 1.1 From version 1.1 package can't be change.
 	 */
 	public $package = array();
 
@@ -80,7 +79,7 @@ class ImperaviRedactorWidget extends CInputWidget
 
 		// Prepend language file to scripts package.
 		if (isset($this->options['lang']) && 'en' !== $this->options['lang']) {
-			array_unshift($this->package['js'], 'langs/' . $this->options['lang'] . '.js');
+			array_unshift($this->package['js'], 'lang/' . $this->options['lang'] . '.js');
 		}
 
 		$this->registerClientScript();
@@ -91,17 +90,26 @@ class ImperaviRedactorWidget extends CInputWidget
 	 */
 	protected function registerClientScript()
 	{
-		Yii::app()->clientScript
+		// Insert plugins in options
+		if (count($this->_plugins) > 0) {
+			$this->options['plugins'] = array_keys($this->_plugins);
+		}
+
+		$clientScript = Yii::app()->clientScript;
+		$selector = CJavaScript::encode($this->selector);
+		$options = CJavaScript::encode($this->options);
+
+		$clientScript
 			->addPackage(self::PACKAGE_ID, $this->package)
 			->registerPackage(self::PACKAGE_ID)
 			->registerScript(
 				$this->id,
-				'jQuery(' . CJavaScript::encode($this->selector) . ').redactor(' . CJavaScript::encode($this->options) . ');',
+				'jQuery(' . $selector . ').redactor(' . $options . ');',
 				CClientScript::POS_READY
 			);
 
 		foreach ($this->plugins as $id => $plugin) {
-			Yii::app()->clientScript
+			$clientScript
 				->addPackage(self::PACKAGE_ID . '-' . $id, $plugin)
 				->registerPackage(self::PACKAGE_ID . '-' . $id);
 		}
@@ -130,16 +138,11 @@ class ImperaviRedactorWidget extends CInputWidget
 	 */
 	public function setPlugins(array $plugins)
 	{
-		if (count($plugins) > 0 && !isset($this->options['plugins'])) {
-			$this->options['plugins'] = array();
-		}
-
 		foreach ($plugins as $id => $plugin) {
 			if (!isset($plugin['baseUrl']) && !isset($plugin['basePath'])) {
 				$plugin['baseUrl'] = $this->assetsUrl . '/plugins/' . $id;
 			}
 			$this->_plugins[$id] = $plugin;
-			$this->options['plugins'][] = $id;
 		}
 	}
 
