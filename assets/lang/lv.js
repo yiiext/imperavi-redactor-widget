@@ -6,6 +6,7 @@ $.Redactor.opts.langs['lv'] = {
 	table: 'Tabula',
 	link: 'Saite',
 	link_insert: 'Iekļaut saiti ...',
+	link_edit: 'Edit link',
 	unlink: 'Noņemt saiti',
 	formatting: 'Stili',
 	paragraph: 'Vienkāršs teksts',

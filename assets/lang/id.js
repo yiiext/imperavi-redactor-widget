@@ -6,6 +6,7 @@ $.Redactor.opts.langs['id'] = {
     table: 'Tabel',
     link: 'Tautan',
     link_insert: 'Sisipkan Tautan ...',
+    link_edit: 'Edit link',
     unlink: 'Hapus Tautan',
     formatting: 'Format',
     paragraph: 'Paragraf',

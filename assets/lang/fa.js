@@ -6,6 +6,7 @@ $.Redactor.opts.langs['fa'] = {
 	table: 'جدول',
 	link: 'پیوند',
 	link_insert: 'درج پیوند ...',
+	link_edit: 'Edit link',
 	unlink: 'از بین بردن پیوند',
 	formatting: 'فالب بندی',
 	paragraph: 'پراگراف',

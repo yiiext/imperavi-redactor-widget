@@ -6,6 +6,7 @@ $.Redactor.opts.langs['he'] = {
 	table: 'טבלה',
 	link: 'קישור',
 	link_insert: 'הכנס קישור',
+	link_edit: 'Edit link',
 	unlink: 'הסרת קישור',
 	formatting: 'עיצוב',
 	paragraph: 'פסקה',

@@ -6,6 +6,7 @@ $.Redactor.opts.langs['zh_cn'] = {
 	table: '表格',
 	link: '链接',
 	link_insert: '插入链接',
+	link_edit: 'Edit link',
 	unlink: '取消链接',
 	formatting: '样式',
 	paragraph: '段落',

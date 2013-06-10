@@ -6,6 +6,7 @@ $.Redactor.opts.langs['lt'] = {
 	table: 'Lentelė',
 	link: 'Nuoroda',
 	link_insert: 'Įtraukti nuorodą ...',
+	link_edit: 'Edit link',
 	unlink: 'Panaikinti nuorodą',
 	formatting: 'Formatavimas',
 	paragraph: 'Paragrafas',

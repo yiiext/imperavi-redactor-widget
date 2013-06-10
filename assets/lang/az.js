@@ -6,6 +6,7 @@ $.Redactor.opts.langs['az'] = {
 	table: 'Cədvəl',
 	link: 'Link',
 	link_insert: 'Link əlavə...',
+	link_edit: 'Edit link',
 	unlink: 'Linki sil',
 	formatting: 'Format',
 	paragraph: 'Paraqraf',

@@ -6,6 +6,7 @@ $.Redactor.opts.langs['zh_tw'] = {
 	table: '表格',
 	link: '連結',
 	link_insert: '插入連結',
+	link_edit: 'Edit link',
 	unlink: '移除連結',
 	formatting: '樣式',
 	paragraph: '段落',

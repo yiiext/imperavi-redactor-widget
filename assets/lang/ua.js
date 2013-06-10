@@ -6,6 +6,7 @@ $.Redactor.opts.langs['ua'] = {
 	table: 'Таблиця',
 	link: 'Посилання',
 	link_insert: 'Вставити посилання ...',
+	link_edit: 'Edit link',
 	unlink: 'Видалити посилання',
 	formatting: 'Стилі',
 	paragraph: 'Звичайний текст',

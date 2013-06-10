@@ -6,6 +6,7 @@ $.Redactor.opts.langs['vi'] = {
 	table: 'Tạo bảng',
 	link: 'Đường dẫn',
 	link_insert: 'Thêm đường dẫn ...',
+	link_edit: 'Edit link',
 	unlink: 'Loại bỏ đường dẫn',
 	formatting: 'Định dạng văn bản',
 	paragraph: 'Đoạn văn',

@@ -6,6 +6,7 @@ $.Redactor.opts.langs['th'] = {
 	table: 'ตาราง',
 	link: 'ลิงค์',
 	link_insert: 'ใส่ลิงค์ ...',
+	link_edit: 'Edit link',
 	unlink: 'ลบลิงค์',
 	formatting: 'รูปแบบ',
 	paragraph: 'ย่อหน้า',

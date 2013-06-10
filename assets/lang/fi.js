@@ -6,6 +6,7 @@ $.Redactor.opts.langs['fi'] = {
 	table: 'Taulukko',
 	link: 'Linkki',
 	link_insert: 'Lisää linkki...',
+	link_edit: 'Edit link',
 	unlink: 'Poista linkki',
 	formatting: 'Tyylit',
 	paragraph: 'Normaaliteksti',

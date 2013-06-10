@@ -6,6 +6,7 @@ $.Redactor.opts.langs['sv'] = {
 	table: 'Tabell',
 	link: 'Länk',
 	link_insert: 'Sätt In Länk...',
+	link_edit: 'Edit link',
 	unlink: 'Tag Bort Länk',
 	formatting: 'Formatering',
 	paragraph: 'Paragraf',

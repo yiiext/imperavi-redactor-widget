@@ -6,6 +6,7 @@ $.Redactor.opts.langs['el'] = {
 	table: 'Πίνακας',
 	link: 'Σύνδεσμος',
 	link_insert: 'Εισαγωγή συνδέσμου...',
+	link_edit: 'Edit link',
 	unlink: 'Ακύρωση συνδέσμου',
 	formatting: 'Μορφοποίηση',
 	paragraph: 'Παράγραφος',

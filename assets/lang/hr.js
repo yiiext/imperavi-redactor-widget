@@ -6,6 +6,7 @@ $.Redactor.opts.langs['hr'] = {
 	table: 'Tablica',
 	link: 'Poveznica',
 	link_insert: 'Umetni poveznicu...',
+	link_edit: 'Edit link',
 	unlink: 'Ukloni poveznicu',
 	formatting: 'Stilovi',
 	paragraph: 'Paragraf',

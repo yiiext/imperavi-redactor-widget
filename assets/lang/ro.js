@@ -6,6 +6,7 @@ $.Redactor.opts.langs['ro'] = {
 	table: 'Tabel',
 	link: 'Legatura web',
 	link_insert: 'Adauga legatura web...',
+	link_edit: 'Edit link',
 	unlink: 'Elimina legatura web',
 	formatting: 'Formatare',
 	paragraph: 'Paragraf',

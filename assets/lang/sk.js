@@ -6,6 +6,7 @@ $.Redactor.opts.langs['sk'] = {
 	table: 'Tabulka',
 	link: 'Odkaz',
 	link_insert: 'Vložiť odkaz ...',
+	link_edit: 'Edit link',
 	unlink: 'Odstrániť odkaz',
 	formatting: 'Štýl',
 	paragraph: 'Odstavec',

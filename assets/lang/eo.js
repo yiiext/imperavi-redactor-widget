@@ -6,6 +6,7 @@ $.Redactor.opts.langs['eo'] = {
 	table: 'Tabelo', // substantive
 	link: 'Ligu', // imperative
 	link_insert: 'Enŝovu ligilon ...', // imperative
+	link_edit: 'Edit link',
 	unlink: 'Malligu', // imperative
 	formatting: 'Tekstaranĝo', // substantive
 	paragraph: 'Paragrafo', // substantive

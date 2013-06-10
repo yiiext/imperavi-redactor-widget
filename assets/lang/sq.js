@@ -6,6 +6,7 @@ $.Redactor.opts.langs['sq'] = {
 	table: 'Tabel&euml;',
 	link: 'Link',
 	link_insert: 'Lidh linq ...',
+	link_edit: 'Edit link',
 	unlink: 'Hiq linkun',
 	formatting: 'Stilet',
 	paragraph: 'Paragraf',

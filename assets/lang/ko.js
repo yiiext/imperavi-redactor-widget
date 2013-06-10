@@ -6,6 +6,7 @@ $.Redactor.opts.langs['ko'] = {
 	table: '표',
 	link: '링크',
 	link_insert: '링크 삽입...',
+	link_edit: 'Edit link',
 	unlink: '링크 삭제',
 	formatting: '스타일',
 	paragraph: '단락',

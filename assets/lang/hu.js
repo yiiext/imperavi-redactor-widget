@@ -6,6 +6,7 @@ $.Redactor.opts.langs['hu'] = {
 	table: 'Tábla',
 	link: 'Link',
 	link_insert: 'Link beszúrás ...',
+	link_edit: 'Edit link',
 	unlink: 'Link megszüntetés',
 	formatting: 'Stílusok',
 	paragraph: 'Bekezdés',

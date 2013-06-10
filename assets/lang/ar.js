@@ -6,6 +6,7 @@ $.Redactor.opts.langs['ar'] = {
 	table: 'جدول',
 	link: 'رابط',
 	link_insert: 'أضف / حرر رابط',
+	link_edit: 'Edit link',
 	unlink: 'إزالة الرابط',
 	formatting: 'التنسيق',
 	paragraph: 'فقرة',

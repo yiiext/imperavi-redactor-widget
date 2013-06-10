@@ -6,6 +6,7 @@ $.Redactor.opts.langs['tr'] = {
 	table: 'Tablo',
 	link: 'Bağlantı',
 	link_insert: 'Bağlantı Ekle ...',
+	link_edit: 'Edit link',
 	unlink: 'Bağlantı Kaldır',
 	formatting: 'Stiller',
 	paragraph: 'Paragraf',

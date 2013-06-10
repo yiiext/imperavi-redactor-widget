@@ -6,6 +6,7 @@ $.Redactor.opts.langs['sr-lat'] = {
 	table: 'Tabela',
 	link: 'Veza',
 	link_insert: 'Ubaci vezu ...',
+	link_edit: 'Edit link',
 	unlink: 'Ukloni vezu',
 	formatting: 'Stilovi',
 	paragraph: 'Paragraf',

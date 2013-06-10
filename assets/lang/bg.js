@@ -6,6 +6,7 @@ $.Redactor.opts.langs['bg'] = {
 	table: 'Таблица',
 	link: 'Връзка',
 	link_insert: 'Вкарай връзка ...',
+	link_edit: 'Edit link',
 	unlink: 'Премахни връзка',
 	formatting: 'Стилове',
 	paragraph: 'Параграф',

@@ -6,6 +6,7 @@ $.Redactor.opts.langs['pt_pt'] = {
 	table: 'Tabela',
 	link: 'Hiperligação',
 	link_insert: 'Inserir Hiperligação ...',
+	link_edit: 'Edit link',
 	unlink: 'Remover Hiperligação',
 	formatting: 'Formatação',
 	paragraph: 'Parágrafo',

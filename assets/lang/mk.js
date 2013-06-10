@@ -6,6 +6,7 @@ $.Redactor.opts.langs['mk'] = {
 	table: 'Табела',
 	link: 'Линк',
 	link_insert: 'Внеси линк ...',
+	link_edit: 'Edit link',
 	unlink: 'Избриши линк',
 	formatting: 'Форматирање',
 	paragraph: 'Параграф',

@@ -6,6 +6,7 @@ $.Redactor.opts.langs['es_ar'] = {
 	table: 'Tabla',
 	link: 'Enlace',
 	link_insert: 'Insertar enlace ...',
+	link_edit: 'Edit link',
 	unlink: 'Eliminar enlace',
 	formatting: 'Estilos',
 	paragraph: 'Párrafo',

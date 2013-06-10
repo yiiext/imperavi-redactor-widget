@@ -6,6 +6,7 @@ $.Redactor.opts.langs['sr-cir'] = {
 	table: 'Табела',
 	link: 'Веза',
 	link_insert: 'Убаци везу ...',
+	link_edit: 'Edit link',
 	unlink: 'Уклони везу',
 	formatting: 'Стилови',
 	paragraph: 'Параграф',

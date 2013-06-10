@@ -6,6 +6,7 @@ $.Redactor.opts.langs['fr'] = {
 	table: 'Tableau',
 	link: 'Lien',
 	link_insert: 'Insérer un lien...',
+	link_edit: 'Modifier le lien',
 	unlink: 'Supprimer le lien',
 	formatting: 'Styles',
 	paragraph: 'Paragraphe',
@@ -21,11 +22,11 @@ $.Redactor.opts.langs['fr'] = {
 	backcolor: 'Couleur d\'arrière plan du texte',
 	unorderedlist: 'Liste à puces',
 	orderedlist: 'Liste numérotée',
-	outdent: 'Diminuer le trait',
-	indent: 'Augmenter le trait',
+	outdent: 'Diminuer le retrait',
+	indent: 'Augmenter le retrait',
 	cancel: 'Annuler',
 	insert: 'Insérer',
-	save: 'Sauvegarder',
+	save: 'Enregistrer',
 	_delete: 'Supprimer',
 	insert_table: 'Insérer un tableau...',
 	insert_row_above: 'Ajouter une rangée au-dessus',
@@ -48,7 +49,7 @@ $.Redactor.opts.langs['fr'] = {
 	text: 'Texte',
 	mailto: 'Courriel',
 	web: 'Adresse URL',
-	video_html_code: 'Code d\'intégration du vidéo',
+	video_html_code: 'Code d\'intégration de la vidéo',
 	file: 'Insérer un fichier...',
 	upload: 'Téléverser',
 	download: 'Télécharger',
@@ -63,8 +64,8 @@ $.Redactor.opts.langs['fr'] = {
 	deleted: 'Supprimé',
 	anchor: 'Ancre',
 	link_new_tab: 'Ouvrir le lien dans un nouvel onglet',
-	underline: 'Underline',
-	alignment: 'Alignment',
-	filename: 'Name (optional)'
+	underline: 'Souligner',
+	alignment: 'Alignement',
+	filename: 'Nom de fichier (optionnel)'
 };
 })( jQuery );
