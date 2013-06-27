@@ -1,6 +1,6 @@
 /*
-	Redactor v9.0.1
-	Updated: Jun 10, 2013
+	Redactor v9.0.2
+	Updated: Jun 25, 2013
 
 	http://imperavi.com/redactor/
 
@@ -13,6 +13,7 @@
 (function($)
 {
 	var uuid = 0;
+	var rtePaste = false;
 
 	"use strict";
 
@@ -71,7 +72,7 @@
 	}
 
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '9.0.1';
+	$.Redactor.VERSION = '9.0.2';
 	$.Redactor.opts = {
 
 			// callbacks
@@ -192,6 +193,7 @@
 			textareamode: false,
 			emptyHtml: '<p>&#x200b;</p>',
 			invisibleSpace: '&#x200b;',
+			rBlockTest: /^(P|H[1-6]|LI|ADDRESS|SECTION|HEADER|FOOTER|ASIDE|ARTICLE)$/i,
 			alignmentTags: ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'TD', 'DIV', 'BLOCKQUOTE'],
 			ownLine: ['area', 'body', 'head', 'hr', 'i?frame', 'link', 'meta', 'noscript', 'style', 'script', 'table', 'tbody', 'thead', 'tfoot'],
 			contOwnLine: ['li', 'dt', 'dt', 'h[1-6]', 'option', 'script'],
@@ -305,6 +307,7 @@
 				options
 			);
 
+			this.start = true;
 			this.dropdowns = [];
 
 			// get sizes
@@ -354,7 +357,7 @@
 			this.opts.curLang = this.opts.langs[this.opts.lang];
 
 			// Build
-			setTimeout($.proxy(this.buildStart, this), 1);
+			this.buildStart();
 
 		},
 		initToolbar: function(lang)
@@ -664,6 +667,29 @@
 			}
 		},
 
+		// API GET
+		getObject: function()
+		{
+			return $.extend({}, this);
+		},
+		getEditor: function()
+		{
+			return this.$editor;
+		},
+		getBox: function()
+		{
+			return this.$box;
+		},
+		getIframe: function()
+		{
+			return (this.opts.iframe) ? this.$frame : false;
+		},
+		getToolbar: function()
+		{
+			return this.$toolbar;
+		},
+
+
 		// CODE GET & SET
 		get: function()
 		{
@@ -769,7 +795,11 @@
 
 			// onchange & after callback
 			this.callback('syncAfter', false, html);
-			this.callback('change', false, html);
+
+			if (this.start === false)
+			{
+				this.callback('change', false, html);
+			}
 
 		},
 		syncClean: function(html)
@@ -915,6 +945,8 @@
 		},
 		buildAfter: function()
 		{
+			this.start = false;
+
 			// load toolbar
 			if (this.opts.toolbar)
 			{
@@ -927,9 +959,6 @@
 
 			// plugins
 			this.buildPlugins();
-
-			// paste except opera
-			if (!this.browser('opera')) this.pasteInit();
 
 			// enter, tab, etc.
 			this.buildBindKeyboard();
@@ -968,8 +997,62 @@
 		},
 		buildBindKeyboard: function()
 		{
+			var oldsafari = false;
+			if (this.browser('webkit') && navigator.userAgent.indexOf('Chrome') === -1)
+			{
+				var arr = this.browser('version').split('.');
+				if (arr[0] < 536) oldsafari = true;
+			}
+
+			this.$editor.on('paste.redactor', $.proxy(function(e)
+			{
+				if (oldsafari) return true;
+
+				// paste except opera
+				if (this.browser('opera')) return true;
+
+				if (this.isMobile()) return false;
+				if (!this.opts.cleanup) return false;
+
+				rtePaste = true;
+
+				this.selectionSave();
+
+				if (!this.selectall)
+				{
+					if (this.opts.autoresize === true )
+					{
+						this.$editor.height(this.$editor.height());
+						this.saveScroll = this.document.body.scrollTop;
+					}
+					else
+					{
+						this.saveScroll = this.$editor.scrollTop();
+					}
+				}
+
+				var frag = this.extractContent();
+
+				setTimeout($.proxy(function()
+				{
+					var pastedFrag = this.extractContent();
+					this.$editor.append(frag);
+
+					this.selectionRestore();
+
+					var html = this.getFragmentHtml(pastedFrag);
+					this.pasteClean(html);
+
+					if (this.opts.autoresize === true) this.$editor.css('height', 'auto');
+
+				}, this), 1);
+
+			}, this));
+
 			this.$editor.on('keydown.redactor', $.proxy(function(e)
 			{
+				if (rtePaste) return false;
+
 				var key = e.which;
 				var ctrl = e.ctrlKey || e.metaKey;
 				var parent = this.getParent();
@@ -1014,11 +1097,15 @@
 				}
 
 				// select all
-				if (ctrl)
+				if (ctrl && key === 65)
 				{
-					if (key === 65) this.selectall = true;
-					else if (key != this.keyCode.LEFT_WIN && !ctrl) this.selectall = false;
+					this.selectall = true;
 				}
+				else if (key != this.keyCode.LEFT_WIN && !ctrl)
+				{
+					this.selectall = false;
+				}
+
 
 				// enter
 				if (key == this.keyCode.ENTER && !e.shiftKey && !e.ctrlKey && !e.metaKey )
@@ -1026,6 +1113,8 @@
 					// In ie, opera in the tables are created paragraphs, fix it.
 					if (parent.nodeType == 1 && (parent.tagName == 'TD' || parent.tagName == 'TH'))
 					{
+						this.bufferSet();
+
 						this.insertNode(document.createElement('br'));
 						e.preventDefault();
 						return false;
@@ -1053,8 +1142,11 @@
 						if (!this.opts.linebreaks)
 						{
 							// replace div to p
-							if (block && /^(P|H[1-6]|LI|ADDRESS|SECTION|HEADER|FOOTER|ASIDE|ARTICLE)$/i.test(block.tagName))
+							if (block && this.opts.rBlockTest.test(block.tagName))
 							{
+								// hit enter
+								this.bufferSet();
+
 								setTimeout($.proxy(function()
 								{
 									var blockElem = this.getBlock();
@@ -1070,6 +1162,9 @@
 							}
 							else if (block === false)
 							{
+								// hit enter
+								this.bufferSet();
+
 								var node = $('<p>' + this.opts.invisibleSpace + '</p>');
 								this.insertNode(node[0]);
 								this.selectionStart(node);
@@ -1081,8 +1176,11 @@
 						if (this.opts.linebreaks)
 						{
 							// replace div to br
-							if (block && /^(P|H[1-6]|LI|ADDRESS|SECTION|HEADER|FOOTER|ASIDE|ARTICLE)$/i.test(block.tagName))
+							if (block && this.opts.rBlockTest.test(block.tagName))
 							{
+								// hit enter
+								this.bufferSet();
+
 								setTimeout($.proxy(function()
 								{
 									var blockElem = this.getBlock();
@@ -1095,6 +1193,9 @@
 							}
 							else
 							{
+								// hit enter
+								this.bufferSet();
+
 								this.insertLineBreak();
 								e.preventDefault();
 								return;
@@ -1105,6 +1206,9 @@
 						if (block.tagName == 'BLOCKQUOTE'
 							|| block.tagName == 'FIGCAPTION')
 						{
+							// hit enter
+							this.bufferSet();
+
 							this.insertLineBreak();
 							e.preventDefault();
 							return;
@@ -1161,6 +1265,8 @@
 
 			this.$editor.on('keyup.redactor', $.proxy(function(e)
 			{
+				if (rtePaste) return false;
+
 				var key = e.which;
 				var parent = this.getParent();
 				var current = this.getCurrent();
@@ -1379,8 +1485,8 @@
 				else if (key === 74) this.shortcutsLoad(e, 'insertunorderedlist'); // Ctrl + j
 				else if (key === 75) this.shortcutsLoad(e, 'insertorderedlist'); // Ctrl + k
 
-				else if (key === 76) this.shortcutsLoad(e, 'superscript'); // Ctrl + l
-				else if (key === 72) this.shortcutsLoad(e, 'subscript'); // Ctrl + h
+				else if (key === 72) this.shortcutsLoad(e, 'superscript'); // Ctrl + h
+				else if (key === 76) this.shortcutsLoad(e, 'subscript'); // Ctrl + l
 			}
 			else
 			{
@@ -1616,7 +1722,7 @@
 			if (this.opts.toolbarFixed)
 			{
 				this.toolbarObserveScroll();
-				$( document ).on('scroll.redactor', $.proxy(this.toolbarObserveScroll, this));
+				$(document).on('scroll.redactor', $.proxy(this.toolbarObserveScroll, this));
 			}
 
 			// buttons response
@@ -1849,7 +1955,7 @@
 						if (e.preventDefault) e.preventDefault();
 						if (this.browser('msie')) e.returnValue = false;
 
-						if (btnObject.callback) btnObject.callback.call(this, btnName, $item, btnObject);
+						if (btnObject.callback) btnObject.callback.call(this, btnName, $item, btnObject, e);
 						if (btnObject.exec) this.execCommand(btnObject.exec, btnName);
 						if (btnObject.func) this[btnObject.func](btnName);
 
@@ -1931,7 +2037,9 @@
 				if (e.preventDefault) e.preventDefault();
 				if (this.browser('msie')) e.returnValue = false;
 
-				if (!this.opts.visual && btnName !== 'html') return false;
+				if ($button.hasClass('redactor_button_disabled')) return false;
+
+				if (this.isFocused() === false) this.$editor.focus();
 
 				if (btnObject.exec)
 				{
@@ -1947,16 +2055,16 @@
 				}
 				else if (btnObject.callback)
 				{
-					btnObject.callback.call(this, btnName, $button, btnObject);
+					btnObject.callback.call(this, btnName, $button, btnObject, e);
 					this.airBindMousemoveHide();
 
 				}
 				else if (btnName === 'backcolor' || btnName === 'fontcolor' || btnObject.dropdown)
 				{
-					this.dropdownShow( e, $dropdown, btnName );
+					this.dropdownShow(e, $dropdown, btnName);
 				}
 
-				this.buttonActiveObserver();
+				this.buttonActiveObserver(false, btnName);
 
 			}, this));
 
@@ -1976,6 +2084,13 @@
 			if (!this.opts.toolbar) return false;
 			return $(this.$toolbar.find('a.redactor_btn_' + key));
 		},
+		buttonActiveToggle: function(key)
+		{
+			var btn = this.buttonGet(key);
+
+			if (btn.hasClass('redactor_act')) btn.removeClass('redactor_act');
+			else btn.addClass('redactor_act');
+		},
 		buttonActive: function(key)
 		{
 			this.buttonGet(key).addClass('redactor_act');
@@ -1984,11 +2099,11 @@
 		{
 			this.buttonGet(key).removeClass('redactor_act');
 		},
-		buttonInactiveAll: function()
+		buttonInactiveAll: function(btnName)
 		{
 			$.each(this.opts.activeButtons, $.proxy(function(i, s)
 			{
-				this.buttonInactive(s);
+				if (s != btnName) this.buttonInactive(s);
 
 			}, this));
 		},
@@ -2071,10 +2186,16 @@
 			$btn.parent().removeClass('redactor_btn_right');
 			$btn.remove();
 		},
-		buttonActiveObserver: function()
+		buttonActiveObserver: function(e, btnName)
 		{
 			var parent = this.getParent();
-			this.buttonInactiveAll();
+			this.buttonInactiveAll(btnName);
+
+			if (e === false)
+			{
+				this.buttonActiveToggle(btnName);
+				return;
+			}
 
 			if (parent && parent.tagName === 'A') this.$toolbar.find('a.redactor_dropdown_link').text(this.opts.curLang.link_edit);
 			else this.$toolbar.find('a.redactor_dropdown_link').text(this.opts.curLang.link_insert);
@@ -2177,11 +2298,12 @@
 					}
 				}
 
+				this.bufferSet();
+				this.selectionSave();
+
 				// remove lists
 				if (remove)
 				{
-					this.selectionSave();
-
 					var nodes = this.getNodes();
 					var elems = this.getBlocks(nodes);
 
@@ -2224,12 +2346,10 @@
 				// insert lists
 				else
 				{
-					this.selectionSave();
-
 					this.document.execCommand(cmd);
 
 					var parent = this.getParent();
-					var $list = $(parent).closest('ol, ul');
+					var $list = $(parent).parents('ol, ul');
 
 					if ($list.length)
 					{
@@ -2257,6 +2377,8 @@
 
 			if (cmd === 'unlink' )
 			{
+				this.bufferSet();
+
 				var parent = this.getParent();
 				if ($(parent)[0].tagName === 'A')
 				{
@@ -3446,27 +3568,37 @@
 		},
 		insertAfterLastElement: function(element)
 		{
-			if (this.isEndOfElement() && this.opts.linebreaks === false)
+			if (this.isEndOfElement())
 			{
 				if (this.$editor.contents().last()[0] !== element) return false;
 
 				this.bufferSet();
 
-				var node = $(this.opts.emptyHtml);
-				$(element).after(node);
-				this.selectionStart(node);
+				if (this.opts.linebreaks === false)
+				{
+					var node = $(this.opts.emptyHtml);
+					$(element).after(node);
+					this.selectionStart(node);
+				}
+				else
+				{
+					var node = $('<span id="selection-marker-1">' + this.opts.invisibleSpace + '</span>', this.document)[0];
+					$(element).after(node);
+					$(node).after(this.opts.invisibleSpace);
+					this.selectionRestore();
+				}
 			}
 		},
 		insertLineBreak: function()
 		{
 			this.selectionSave();
-			this.$editor.find('#selection-marker-1').before('<br>' + ( this.browser('webkit') ? this.opts.invisibleSpace : '') );
+			this.$editor.find('#selection-marker-1').before('<br>' + (this.browser('webkit') ? this.opts.invisibleSpace : ''));
 			this.selectionRestore();
 		},
 		insertDoubleLineBreak: function()
 		{
 			this.selectionSave();
-			this.$editor.find('#selection-marker-1').before('<br><br>' + ( this.browser('webkit') ? this.opts.invisibleSpace : '') );
+			this.$editor.find('#selection-marker-1').before('<br><br>' + (this.browser('webkit') ? this.opts.invisibleSpace : ''));
 			this.selectionRestore();
 		},
 		replaceLineBreak: function(element)
@@ -3478,47 +3610,6 @@
 		},
 
 		// PASTE
-		pasteInit: function ()
-		{
-			if (this.isMobile()) return false;
-
-			this.$editor.on('paste.redactor', $.proxy(function(e)
-			{
-				if (!this.opts.cleanup) return true;
-
-				this.selectionSave();
-
-				if (!this.selectall)
-				{
-					if (this.opts.autoresize === true )
-					{
-						this.$editor.height(this.$editor.height());
-						this.saveScroll = this.document.body.scrollTop;
-					}
-					else
-					{
-						this.saveScroll = this.$editor.scrollTop();
-					}
-				}
-
-				var frag = this.extractContent();
-
-				setTimeout($.proxy(function()
-				{
-					var pastedFrag = this.extractContent();
-					this.$editor.append(frag);
-
-					this.selectionRestore();
-
-					var html = this.getFragmentHtml(pastedFrag);
-					this.pasteClean(html);
-
-					if (this.opts.autoresize === true) this.$editor.css('height', 'auto');
-
-				}, this), 1);
-
-			}, this));
-		},
 		pasteClean: function(html)
 		{
 			html = this.callback('pasteBefore', false, html);
@@ -3599,6 +3690,9 @@
 			html = html.replace(/<p><p>/gi, '<p>');
 			html = html.replace(/<\/p><\/p>/gi, '</p>');
 
+			html = html.replace(/<li>(\s*|\t*|\n*)<p>/gi, '<li>');
+			html = html.replace(/<\/p>(\s*|\t*|\n*)<\/li>/gi, '</li>');
+
 			if (this.opts.linebreaks === true)
 			{
 				html = html.replace(/<p(.*?)>([\w\W]*?)<\/p>/gi, '$2<br>');
@@ -3648,6 +3742,7 @@
 			this.insertHtml(html);
 
 			this.selectall = false;
+			setTimeout(function() { rtePaste = false; }, 100);
 
 			if (this.opts.autoresize) $(this.document.body).scrollTop(this.saveScroll);
 			else this.$editor.scrollTop(this.saveScroll);
@@ -4498,7 +4593,6 @@
 				}
 				else text = sel.toString();
 
-
 				$('.redactor_link_text').val(text);
 
 				var thref = self.location.href.replace(/\/$/i, '');
@@ -5307,6 +5401,7 @@
 
 				this.modalSaveBodyOveflow = $(document.body).css('overflow');
 				$(document.body).css('overflow', 'hidden');
+
 			}
 			else
 			{
@@ -5354,13 +5449,15 @@
 
 				redactorModalInner.html('');
 
-				if ( this.opts.modalOverlay)
+				if (this.opts.modalOverlay)
 				{
 					$('#redactor_modal_overlay').hide().off('click', this.modalClose);
 				}
 
 				$(document).unbind('keyup', this.hdlModalClose);
 				this.$editor.unbind('keyup', this.hdlModalClose);
+
+				this.selectionRestore();
 
 			}, this));
 
