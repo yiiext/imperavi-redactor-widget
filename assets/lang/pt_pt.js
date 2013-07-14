@@ -63,7 +63,7 @@ $.Redactor.opts.langs['pt_pt'] = {
 	horizontalrule: 'Inserir Linha Horizontal',
 	deleted: 'Eliminado',
 	anchor: 'Âncora',
-	link_new_tab: 'Abrir hiperligação em novo separador'
+	link_new_tab: 'Abrir hiperligação em novo separador',
 	underline: 'Underline',
 	alignment: 'Alignment',
 	filename: 'Name (optional)'
