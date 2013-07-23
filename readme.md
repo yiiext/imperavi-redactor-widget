@@ -78,6 +78,7 @@ $this->widget('ImperaviRedactorWidget', array(
 To support Redactor's **file and image upload** capabilities (http://imperavi.com/redactor/docs/images, http://imperavi.com/redactor/docs/files/), the widget includes 3 actions: *'fileUpload'*, *'imageUpload'*, and *'imageList'*; which you can use as follows:
 
 **(1).** Create an "uploads" directory in your project's root folder to host your uploaded files (configure proper permissions so your users can upload files there).
+
 **(2).** Declare the new actions inside your controller. Example:
 
 ```php
