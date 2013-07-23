@@ -122,7 +122,7 @@ public function accessRules()
 }
 ```
 
-**(4).** When initializing the widget, include the file and image upload options (*'fileUpload'*, *'fileUploadErrorCallback'*, *'imageUpload'*, *'imageGetJson'* and/or *'imageUploadErrorCallback'*, as described in http://imperavi.com/redactor/docs/settings). Make sure the URLs in *createUrl()* make sense for the new actions (*controller/action*). Example:
+**(4).** When initializing the widget, include the file and image upload options ( *'fileUpload'*, *'fileUploadErrorCallback'*, *'imageUpload'*, *'imageGetJson'* and/or *'imageUploadErrorCallback'*, as described in http://imperavi.com/redactor/docs/settings). Make sure the URLs in *createUrl()* make sense for the new actions (*controller/action*). Example:
 
 ```php
 $controllerName = "mycontroller";
