@@ -75,10 +75,10 @@ $this->widget('ImperaviRedactorWidget', array(
 ));
 ```
 
-To support Redactor's **file and image upload** capabilities (http://imperavi.com/redactor/docs/images), the widget includes 3 actions: 'fileUpload', 'imageUpload', 'imageList', which you can use as follows:
+To support Redactor's **file and image upload** capabilities (http://imperavi.com/redactor/docs/images, http://imperavi.com/redactor/docs/files/), the widget includes 3 actions: *'fileUpload'*, *'imageUpload'*, and *'imageList'*; which you can use as follows:
 
-1. Create an "uploads" directory in your project's root folder to host your uploaded files (configure proper permissions so your users can upload files there).
-2. Declare the new actions inside your controller. Example:
+**(1).** Create an "uploads" directory in your project's root folder to host your uploaded files (configure proper permissions so your users can upload files there).
+**(2).** Declare the new actions inside your controller. Example:
 
 ```php
 class MyController extends Controller
@@ -105,7 +105,7 @@ class MyController extends Controller
 	}
 }
 ```
-3. Inside your controller, add the corresponding access rules for these actions (or 403 errors will happen). Ej:
+**(3).** Inside your controller, add the corresponding access rules for these actions (or 403 errors will happen). Ej:
 
 ```php
 public function accessRules()
@@ -121,7 +121,7 @@ public function accessRules()
 }
 ```
 
-4. When initializing the widget, include the file and image upload options ('fileUpload', 'fileUploadErrorCallback', 'imageUpload', 'imageGetJson' and / or 'imageUploadErrorCallback', as described in http://imperavi.com/redactor/docs/settings). Make sure the URLs in createUrl() make sense for the new actions (controller/action). Example:
+**(4).** When initializing the widget, include the file and image upload options (*'fileUpload'*, *'fileUploadErrorCallback'*, *'imageUpload'*, *'imageGetJson'* and/or *'imageUploadErrorCallback'*, as described in http://imperavi.com/redactor/docs/settings). Make sure the URLs in *createUrl()* make sense for the new actions (*controller/action*). Example:
 
 ```php
 $controllerName = "mycontroller";
@@ -149,4 +149,4 @@ $this->widget('ImperaviRedactorWidget', array(
 ));
 ```
 
-The "Insert image / file" dialogs should have changed by now.
+The "Insert image/file" dialogs should have changed by now.
