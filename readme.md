@@ -75,7 +75,7 @@ $this->widget('ImperaviRedactorWidget', array(
 ));
 ```
 
-To support Redactor's file and image upload capabilities (http://imperavi.com/redactor/docs/images), the widget includes 3 actions: 'fileUpload', 'imageUpload', 'imageList', wich you can use as follows:
+To support Redactor's **file and image upload** capabilities (http://imperavi.com/redactor/docs/images), the widget includes 3 actions: 'fileUpload', 'imageUpload', 'imageList', which you can use as follows:
 
 1. Create an "uploads" directory in your project's root folder to host your uploaded files (configure proper permissions so your users can upload files there).
 2. Declare the new actions inside your controller. Example:
@@ -105,7 +105,7 @@ class MyController extends Controller
 	}
 }
 ```
-3. Don't forget to add the corresponding access rules for these actions. Ej:
+3. Inside your controller, add the corresponding access rules for these actions (or 403 errors will happen). Ej:
 
 ```php
 public function accessRules()
@@ -126,25 +126,27 @@ public function accessRules()
 ```php
 $controllerName = "mycontroller";
 $this->widget('ImperaviRedactorWidget', array(
-	'model' => $model,
-	'attribute' => $attribute,
+	'model'=>$model_reference,
+	'attribute'=>'my_attribute',
 	
 	'options'=>array(
 		'fileUpload'=>Yii::app()->createUrl($controllerName . '/fileUpload',array(
-			'attr'=>$attribute
+			'attr'=>'my_attribute'
 		)),
 		'fileUploadErrorCallback'=>new CJavaScriptExpression(
 			'function(obj,json) { alert(json.error); }'
 		),
 		'imageUpload'=>Yii::app()->createUrl($controllerName . '/imageUpload',array(
-			'attr'=>$attribute
+			'attr'=>'my_attribute'
 		)),
 		'imageGetJson'=>Yii::app()->createUrl($controllerName . '/imageList',array(
-			'attr'=>$attribute
+			'attr'=>'my_attribute'
 		)),
 		'imageUploadErrorCallback'=>new CJavaScriptExpression(
 			'function(obj,json) { alert(json.error); }'
 		),
 	),
-	));
+));
 ```
+
+The "Insert image / file" dialogs should have changed by now.
