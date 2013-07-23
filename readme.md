@@ -74,3 +74,77 @@ $this->widget('ImperaviRedactorWidget', array(
 	),
 ));
 ```
+
+To support Redactor's file and image upload capabilities (http://imperavi.com/redactor/docs/images), the widget includes 3 actions: 'fileUpload', 'imageUpload', 'imageList', wich you can use as follows:
+
+1. Create an "uploads" directory in your project's root folder to host your uploaded files (configure proper permissions so your users can upload files there).
+2. Declare the new actions inside your controller. Example:
+
+```php
+class MyController extends Controller
+{
+	// (...) Your existing Controller code (...)
+	
+	public function actions()
+	{
+		return array(
+			'fileUpload'=>array(
+				'class'=>'ext.imperavi-redactor-widget.actions.FileUpload',
+				'uploadCreate'=>true,
+				'permissions'=>0664,
+			),
+			'imageUpload'=>array(
+				'class'=>'ext.imperavi-redactor-widget.actions.ImageUpload',
+				'uploadCreate'=>true,
+				'permissions'=>0664,
+			),
+			'imageList'=>array(
+				'class'=>'ext.imperavi-redactor-widget.actions.ImageList',
+			)
+		);
+	}
+}
+```
+3. Don't forget to add the corresponding access rules for these actions. Ej:
+
+```php
+public function accessRules()
+{
+	return array(
+		// (...) Your existing rules (...)
+		
+		array('allow',
+			'actions'=>array('fileUpload', 'imageUpload', 'imageList'),
+			'users'=>array('admin'),
+		),
+	);
+}
+```
+
+4. When initializing the widget, include the file and image upload options ('fileUpload', 'fileUploadErrorCallback', 'imageUpload', 'imageGetJson' and / or 'imageUploadErrorCallback', as described in http://imperavi.com/redactor/docs/settings). Make sure the URLs in createUrl() make sense for the new actions (controller/action). Example:
+
+```php
+$controllerName = "mycontroller";
+$this->widget('ImperaviRedactorWidget', array(
+	'model' => $model,
+	'attribute' => $attribute,
+	
+	'options'=>array(
+		'fileUpload'=>Yii::app()->createUrl($controllerName . '/fileUpload',array(
+			'attr'=>$attribute
+		)),
+		'fileUploadErrorCallback'=>new CJavaScriptExpression(
+			'function(obj,json) { alert(json.error); }'
+		),
+		'imageUpload'=>Yii::app()->createUrl($controllerName . '/imageUpload',array(
+			'attr'=>$attribute
+		)),
+		'imageGetJson'=>Yii::app()->createUrl($controllerName . '/imageList',array(
+			'attr'=>$attribute
+		)),
+		'imageUploadErrorCallback'=>new CJavaScriptExpression(
+			'function(obj,json) { alert(json.error); }'
+		),
+	),
+	));
+```
