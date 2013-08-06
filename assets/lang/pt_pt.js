@@ -16,6 +16,7 @@ $.Redactor.opts.langs['pt_pt'] = {
 	header2: 'Cabeçalho 2',
 	header3: 'Cabeçalho 3',
 	header4: 'Cabeçalho 4',
+	header5: 'Cabeçalho 5',
 	bold:  'Negrito',
 	italic: 'Itálico',
 	fontcolor: 'Cor da Fonte',
@@ -66,6 +67,7 @@ $.Redactor.opts.langs['pt_pt'] = {
 	link_new_tab: 'Abrir hiperligação em novo separador',
 	underline: 'Underline',
 	alignment: 'Alignment',
-	filename: 'Name (optional)'
+	filename: 'Name (optional)',
+	edit: 'Edit'
 };
 })( jQuery );
