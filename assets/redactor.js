@@ -1,6 +1,6 @@
 /*
-	Redactor v9.1.0
-	Updated: Aug 5, 2013
+	Redactor v9.1.1
+	Updated: Aug 12, 2013
 
 	http://imperavi.com/redactor/
 
@@ -72,7 +72,7 @@
 	}
 
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '9.1.0';
+	$.Redactor.VERSION = '9.1.1';
 	$.Redactor.opts = {
 
 			// settings
@@ -90,6 +90,7 @@
 			wym: false,
 			mobile: true,
 			cleanup: true,
+			tidyHtml: true,
 			pastePlainText: false,
 			removeEmptyTags: true,
 			templateVars: false,
@@ -131,7 +132,7 @@
 			tabFocus: true,
 
 			air: false,
-			airButtons: ['formatting', '|', 'bold', 'italic', 'deleted', '|', 'unorderedlist', 'orderedlist', 'outdent', 'indent', '|', 'fontcolor', 'backcolor'],
+			airButtons: ['formatting', '|', 'bold', 'italic', 'deleted', '|', 'unorderedlist', 'orderedlist', 'outdent', 'indent'],
 
 			toolbar: true,
 			toolbarFixed: false,
@@ -145,8 +146,7 @@
 
 			buttonsCustom: {},
 			buttonsAdd: [],
-			buttons: ['html', '|', 'formatting', '|', 'bold', 'italic', 'deleted', '|', 'unorderedlist', 'orderedlist', 'outdent', 'indent', '|', 'image', 'video', 'file', 'table', 'link', '|', 'fontcolor', 'backcolor', '|', 'alignment', '|', 'horizontalrule'], // 'underline', 'alignleft', 'aligncenter', 'alignright', 'justify'
-			colors: ['#ffffff', '#000000', '#eeece1', '#1f497d', '#4f81bd', '#c0504d', '#9bbb59', '#8064a2', '#4bacc6', '#f79646', '#ffff00', '#f2f2f2', '#7f7f7f', '#ddd9c3', '#c6d9f0', '#dbe5f1', '#f2dcdb', '#ebf1dd', '#e5e0ec', '#dbeef3', '#fdeada', '#fff2ca', '#d8d8d8', '#595959', '#c4bd97', '#8db3e2', '#b8cce4', '#e5b9b7', '#d7e3bc', '#ccc1d9', '#b7dde8', '#fbd5b5', '#ffe694', '#bfbfbf', '#3f3f3f', '#938953', '#548dd4', '#95b3d7', '#d99694', '#c3d69b', '#b2a2c7', '#b7dde8', '#fac08f', '#f2c314', '#a5a5a5', '#262626', '#494429', '#17365d', '#366092', '#953734', '#76923c', '#5f497a', '#92cddc', '#e36c09', '#c09100', '#7f7f7f', '#0c0c0c', '#1d1b10', '#0f243e', '#244061', '#632423', '#4f6128', '#3f3151', '#31859b', '#974806', '#7f6000'],
+			buttons: ['html', '|', 'formatting', '|', 'bold', 'italic', 'deleted', '|', 'unorderedlist', 'orderedlist', 'outdent', 'indent', '|', 'image', 'video', 'file', 'table', 'link', '|', 'alignment', '|', 'horizontalrule'], // 'underline', 'alignleft', 'aligncenter', 'alignright', 'justify'
 
 			activeButtons: ['deleted', 'italic', 'bold', 'underline', 'unorderedlist', 'orderedlist', 'alignleft', 'aligncenter', 'alignright', 'justify', 'table'],
 			activeButtonsStates: {
@@ -793,7 +793,7 @@
 
 			if ($.trim(html) === '<br>') html = '';
 
-			if (html !== '') html = this.cleanHtml(html);
+			if (html !== '' && this.opts.tidyHtml) html = this.cleanHtml(html);
 
 			// before callback
 			html = this.callback('syncBefore', false, html);
@@ -1032,6 +1032,10 @@
 			}
 
 			// blur callback
+			this.$editor.on('blur.redactor', $.proxy(function()
+			{
+				this.selectall = false;
+			}, this));
 			if ($.isFunction(this.opts.blurCallback))
 			{
 				this.$editor.on('blur.redactor', $.proxy(this.opts.blurCallback, this));
@@ -1838,8 +1842,6 @@
 
 			$.each(this.opts.buttons, $.proxy(function(i, btnName)
 			{
-
-
 				// separator
 				if ( btnName === '|' ) this.$toolbar.append($(this.opts.buttonSeparator));
 				else if(this.opts.toolbar[btnName])
@@ -2026,53 +2028,6 @@
 			if (this.opts.iframe) hideHandler(this.document);
 		},
 
-		// COLORPICKER
-		pickerBuild: function($dropdown, key)
-		{
-			$dropdown.width(210);
-
-			var rule = 'color';
-			if (key === 'backcolor') rule = 'background-color';
-
-			var len = this.opts.colors.length;
-			var _self = this;
-			for (var i = 0; i < len; i++)
-			{
-				var color = this.opts.colors[i];
-
-				var $swatch = $('<a rel="' + color + '" href="javascript:;" class="redactor_color_link"></a>').css({ 'backgroundColor': color });
-				$dropdown.append($swatch);
-
-				$swatch.on('click', function()
-				{
-					var type = $(this).attr('rel');
-					if (key === 'backcolor') type = $(this).css('background-color');
-
-					_self.pickerSet(rule, type);
-				});
-			}
-
-			var $elNone = $('<a href="javascript:;" class="redactor_color_none"></a>')
-					.html(this.opts.curLang.none)
-					.on('click', function()
-					{
-						_self.pickerSet(rule, false);
-					});
-
-			$dropdown.append($elNone);
-		},
-
-		pickerSet: function(rule, type)
-		{
-			this.bufferSet();
-
-			this.$editor.focus();
-			this.inlineRemoveStyle(rule);
-			if (type !== false) this.inlineSetStyle(rule, type);
-			if (this.opts.air) this.$air.fadeOut(100);
-			this.sync();
-		},
-
 		// DROPDOWNS
 		dropdownBuild: function($dropdown, dropdownObject)
 		{
@@ -2084,7 +2039,7 @@
 				if (btnObject.name === 'separator') $item = $('<a class="redactor_separator_drop">');
 				else
 				{
-					$item = $('<a href="javascript:;" class="' + btnObject.className + ' redactor_dropdown_' + btnName + '">' + btnObject.title + '</a>');
+					$item = $('<a href="#" class="' + btnObject.className + ' redactor_dropdown_' + btnName + '">' + btnObject.title + '</a>');
 					$item.on('click', $.proxy(function(e)
 					{
 						if (e.preventDefault) e.preventDefault();
@@ -2104,7 +2059,7 @@
 
 			}, this));
 		},
-		dropdownShow: function (e, $dropdown, key)
+		dropdownShow: function(e, key)
 		{
 			if (!this.opts.visual)
 			{
@@ -2112,18 +2067,21 @@
 				return false;
 			}
 
-			if (this.buttonGet(key).hasClass('dropact')) this.dropdownHideAll();
+			var $dropdown = this.$toolbar.find('.redactor_dropdown_box_' + key);
+			var $button = this.buttonGet(key);
+
+			if ($button.hasClass('dropact')) this.dropdownHideAll();
 			else
 			{
 				this.dropdownHideAll();
 
 				this.buttonActive(key);
-				this.buttonGet(key).addClass('dropact');
+				$button.addClass('dropact');
 
-				var keyPosition = this.buttonGet(key).position();
+				var keyPosition = $button.position();
 				if (this.toolbarFixed)
 				{
-					keyPosition = this.buttonGet(key).offset();
+					keyPosition = $button.offset();
 				}
 
 				var left = keyPosition.left + 'px';
@@ -2142,6 +2100,7 @@
 					$dropdown.css({ position: 'absolute', left: left, top: keyPosition.top + btnHeight + 'px' }).show();
 				}
 			}
+
 
 			var hdlHideDropDown = $.proxy(function(e)
 			{
@@ -2172,7 +2131,6 @@
 		buttonBuild: function(btnName, btnObject)
 		{
 			var $button = $('<a href="javascript:;" title="' + btnObject.title + '" class="redactor_btn redactor_btn_' + btnName + '"></a>');
-			var $dropdown = $('<div class="redactor_dropdown" style="display: none;">');
 
 			$button.on('click', $.proxy(function(e)
 			{
@@ -2205,9 +2163,9 @@
 					this.airBindMousemoveHide();
 
 				}
-				else if (btnName === 'backcolor' || btnName === 'fontcolor' || btnObject.dropdown)
+				else if (btnObject.dropdown)
 				{
-					this.dropdownShow(e, $dropdown, btnName);
+					this.dropdownShow(e, btnName);
 				}
 
 				this.buttonActiveObserver(false, btnName);
@@ -2215,12 +2173,11 @@
 			}, this));
 
 			// dropdown
-			if (btnName === 'backcolor' || btnName === 'fontcolor' || btnObject.dropdown)
+			if (btnObject.dropdown)
 			{
+				var $dropdown = $('<div class="redactor_dropdown redactor_dropdown_box_' + btnName + '" style="display: none;">');
 				$dropdown.appendTo(this.$toolbar);
-
-				if ( btnName === 'backcolor' || btnName === 'fontcolor') this.pickerBuild($dropdown, btnName);
-				else this.dropdownBuild($dropdown, btnObject.dropdown);
+				this.dropdownBuild($dropdown, btnObject.dropdown);
 			}
 
 			return $button;
@@ -2316,14 +2273,18 @@
 			if (!this.opts.toolbar) return;
 			var btn = this.buttonBuild(key, { title: title, callback: callback, dropdown: dropdown });
 			var $btn = this.buttonGet(afterkey);
-			$btn.parent().after($('<li>').append(btn));
+
+			if ($btn.size() !== 0) $btn.parent().after($('<li>').append(btn));
+			else this.$toolbar.append($('<li>').append(btn));
 		},
 		buttonAddBefore: function(beforekey, key, title, callback, dropdown)
 		{
 			if (!this.opts.toolbar) return;
 			var btn = this.buttonBuild(key, { title: title, callback: callback, dropdown: dropdown });
 			var $btn = this.buttonGet(beforekey);
-			$btn.parent().before($('<li>').append(btn));
+
+			if ($btn.size() !== 0) $btn.parent().before($('<li>').append(btn));
+			else this.$toolbar.append($('<li>').append(btn));
 		},
 		buttonRemove: function (key, separator)
 		{
@@ -2526,14 +2487,14 @@
 				return;
 			}
 
-			if (cmd === 'unlink' )
+			if (cmd === 'unlink')
 			{
 				this.bufferSet();
 
-				var parent = this.getParent();
-				if (parent && $(parent)[0].tagName === 'A')
+				var link = this.currentOrParentIs('A');
+				if (link)
 				{
-					$(parent).replaceWith($(parent).text());
+					$(link).replaceWith($(link).text());
 
 					this.sync();
 					this.callback('execCommand', cmd, param);
@@ -2781,6 +2742,7 @@
 			{
 				var buffer = []
 				var matches = html.match(/<(pre|style|script|title)(.*?)>([\w\W]*?)<\/(pre|style|script|title)>/gi);
+				if (matches === null) matches = [];
 
 				if (this.opts.phpTags)
 				{
@@ -2857,6 +2819,7 @@
 
 			var safes = [];
 			var matches = html.match(/<(table|div|pre|object)(.*?)>([\w\W]*?)<\/(table|div|pre|object)>/gi);
+			if (matches === null) matches = [];
 
 			var commentsMatches = html.match(/<!--([\w\W]*?)-->/gi);
 			if (commentsMatches) matches = $.merge(matches, commentsMatches);
@@ -2864,7 +2827,10 @@
 			if (this.opts.phpTags)
 			{
 				var phpMatches = html.match(/<section(.*?)rel="redactor-php-tag">([\w\W]*?)<\/section>/gi);
-				if (phpMatches) matches = $.merge(matches, phpMatches);
+				if (phpMatches)
+				{
+					matches = $.merge(matches, phpMatches);
+				}
 			}
 
 			if (matches)
@@ -3684,6 +3650,8 @@
 			var utag = tag.toUpperCase();
 			var nodes = this.getNodes();
 
+			console.log(nodes);
+
 			$.each(nodes, function(i, s)
 			{
 				if (s.tagName === utag) $(s).replaceWith($(s).contents());
@@ -3746,7 +3714,7 @@
 				if (this.browser('msie')) this.document.selection.createRange().pasteHTML(html);
 				else this.document.execCommand('inserthtml', false, html);
 			}
-			else this.insertHtmlAdvanced(html);
+			else this.insertHtmlAdvanced(html, false);
 
 			if (this.selectall)
 			{
@@ -3762,7 +3730,7 @@
 
 			if (sync !== false) this.sync();
 		},
-		insertHtmlAdvanced: function(html)
+		insertHtmlAdvanced: function(html, sync)
 		{
 			var sel = this.getSelection();
 
@@ -3790,6 +3758,12 @@
 					sel.addRange(range);
 				}
 			}
+
+			if (sync !== false)
+			{
+				this.sync();
+			}
+
 		},
 		insertText: function(html)
 		{
@@ -3984,7 +3958,15 @@
 				html = html.replace(/<\/p><\/div>/gi, '</p>');
 			}
 
-			html = this.cleanParagraphy(html);
+			if (this.currentOrParentIs('LI'))
+			{
+				html = html.replace(/<p>([\w\W]*?)<\/p>/gi, '$1<br>');
+			}
+			else
+			{
+				html = this.cleanParagraphy(html);
+			}
+
 
 			// remove span
 			html = html.replace(/<span(.*?)>([\w\W]*?)<\/span>/gi, '$2');
@@ -4804,7 +4786,7 @@
 			}
 			else
 			{
-				this.insertHtmlAdvanced(html);
+				this.insertHtmlAdvanced(html, false);
 
 			}
 
@@ -4814,6 +4796,7 @@
 			this.tableObserver(table);
 			this.buttonActiveObserver();
 
+			table.find('span#selection-marker-1').remove();
 			table.removeAttr('id');
 
 			this.sync();
@@ -4987,7 +4970,7 @@
 			var current = this.getBlock() || this.getCurrent();
 
 			if (current) $(current).after(data)
-			else this.insertHtmlAdvanced(data);
+			else this.insertHtmlAdvanced(data, false);
 
 			this.sync();
 			this.modalClose();
@@ -5526,7 +5509,7 @@
 				imageBox.css('margin', '');
 			}
 
-			imageBox.find('img').css('opacity', 1);
+			imageBox.find('img').css('opacity', '');
 			imageBox.replaceWith(function()
 			{
 				return $(this).contents();
@@ -5535,6 +5518,8 @@
 			$(document).off('click.redactor-image-resize-hide');
 			this.$editor.off('click.redactor-image-resize-hide');
 			this.$editor.off('keydown.redactor-image-delete');
+
+			this.sync()
 
 		},
 		imageResize: function(image)
@@ -6691,6 +6676,5 @@
 			}
 		}
 	};
-
 
 })(jQuery);
