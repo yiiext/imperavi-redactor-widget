@@ -151,7 +151,7 @@ class ImperaviRedactorWidget extends CInputWidget
 	public function setPlugins(array $plugins)
 	{
 		foreach ($plugins as $id => $plugin) {
-			if (!isset($plugin['baseUrl'], $plugin['basePath'])) {
+			if (!isset($plugin['baseUrl']) && !isset($plugin['basePath'])) {
 				$plugin['baseUrl'] = $this->getAssetsUrl() . '/plugins/' . $id;
 			}
 

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+current
+----
+
+- Bug #30: Fix an error adding plug-in with a custom baseUrl
+
 1.2.8
 -----
 
