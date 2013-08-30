@@ -1,6 +1,6 @@
 /*
-	Redactor v9.1.1
-	Updated: Aug 12, 2013
+	Redactor v9.1.2
+	Updated: Aug 27, 2013
 
 	http://imperavi.com/redactor/
 
@@ -72,7 +72,7 @@
 	}
 
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '9.1.1';
+	$.Redactor.VERSION = '9.1.2';
 	$.Redactor.opts = {
 
 			// settings
@@ -198,7 +198,7 @@
 			newLevel: ['blockquote', 'div', 'dl', 'fieldset', 'form', 'frameset', 'map', 'ol', 'p', 'pre', 'select', 'td', 'th', 'tr', 'ul'],
 			blockLevelElements: ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DD', 'DL', 'DT', 'DIV', 'LI',
 								'BLOCKQUOTE', 'OUTPUT', 'FIGCAPTION', 'PRE', 'ADDRESS', 'SECTION',
-								'HEADER', 'FOOTER', 'ASIDE', 'ARTICLE'],
+								'HEADER', 'FOOTER', 'ASIDE', 'ARTICLE', 'TD'],
 			// lang
 			langs: {
 				en: {
@@ -299,10 +299,13 @@
 			this.$element = this.$source = $(el);
 			this.uuid = uuid++;
 
+			// clonning options
+			var opts = $.extend(true, {}, $.Redactor.opts);
+
 			// current settings
 			this.opts = $.extend(
 				{},
-				$.Redactor.opts,
+				opts,
 				this.$element.data(),
 				options
 			);
@@ -851,6 +854,10 @@
 			html = html.replace(/<span\s*?>([\w\W]*?)<\/span>/gi, '$1');
 			html = html.replace(/<span>([\w\W]*?)<\/span>/gi, '$1');
 
+			// amp fix
+			html = html.replace(/;amp;/gi, ';');
+
+
 			html = this.cleanReConvertProtected(html);
 
 			return html;
@@ -1394,7 +1401,7 @@
 
 				if (typeof current.nodeValue !== 'undefined' && current.nodeValue !== null)
 				{
-					var value = $.trim(current.nodeValue.replace(/[^\u0000-~]/g, ''));
+					var value = $.trim(current.nodeValue.replace(/[^\u0000-\u1C7F]/g, ''));
 					if (current.remove && current.nodeType === 3 && current.nodeValue.charCodeAt(0) == 8203 && value == '')
 					{
 						current.remove();
@@ -2576,6 +2583,8 @@
 					{
 						var $el = false;
 
+						if (elem.tagName === 'TD') return;
+
 						if ($.inArray(elem.tagName, this.opts.alignmentTags) !== -1)
 						{
 							$el = $(elem);
@@ -2765,7 +2774,7 @@
 			html = html.replace(/\n\s*\n/g, "\n");
 			html = html.replace(/^[\s\n]*/g, ' ');
 			html = html.replace(/[\s\n]*$/g, ' ');
-			html = html.replace( />\s{2,}</g, '><' ); // between inline tags can be only one space
+			html = html.replace( />\s{2,}</g, '> <'); // between inline tags can be only one space
 
 			html = this.cleanReplacer(html, buffer);
 
@@ -2895,6 +2904,8 @@
 			html = R('<br />(\s*</?(?:p|li|div|dl|dd|dt|th|pre|td|ul|ol)[^>]*>)', 'gi', '$1');
 			html = R("\n</p>", 'gi', '</p>');
 
+			html = R('<li><p>', 'gi', '<li>');
+			html = R('</p></li>', 'gi', '</li>');
 			html = R('</li><p>', 'gi', '</li>');
 			//html = R('</ul><p>(.*?)</li>', 'gi', '</ul></li>');
 			/* html = R('</ol><p>', 'gi', '</ol>'); */
@@ -3649,16 +3660,21 @@
 
 			var utag = tag.toUpperCase();
 			var nodes = this.getNodes();
-
-			console.log(nodes);
+			var parent = $(this.getParent()).parent();
 
 			$.each(nodes, function(i, s)
 			{
-				if (s.tagName === utag) $(s).replaceWith($(s).contents());
+				if (s.tagName === utag) this.inlineRemoveFormatReplace(s);
 			});
+
+			if (parent && parent[0].tagName === utag) this.inlineRemoveFormatReplace(parent);
 
 			this.selectionRestore();
 			this.sync();
+		},
+		inlineRemoveFormatReplace: function(el)
+		{
+			$(el).replaceWith($(el).contents());
 		},
 
 		// INSERT
@@ -3872,7 +3888,6 @@
 		{
 			html = this.callback('pasteBefore', false, html);
 
-
 			if (this.opts.pastePlainText)
 			{
 				var tmp = this.document.createElement('div');
@@ -4055,13 +4070,16 @@
 
 			this.insertHtml(html);
 
-
 			this.selectall = false;
 			setTimeout($.proxy(function()
 			{
 				rtePaste = false;
 
 				// FF specific
+				if (this.browser('mozilla'))
+				{
+					this.$editor.find('p:empty').remove()
+				}
 				if (this.pasteClipboardMozilla !== false)
 				{
 					this.pasteClipboardUploadMozilla();
@@ -4476,7 +4494,7 @@
 			{
 				$.each(this.$editor.find('span.redactor-selection-marker'), function()
 				{
-					var html = $.trim($(this).html().replace(/[^\u0000-~]/g, ''));
+					var html = $.trim($(this).html().replace(/[^\u0000-\u1C7F]/g, ''));
 					if (html == '')
 					{
 						$(this).remove();
@@ -5103,6 +5121,7 @@
 				text = $('#redactor_link_anchor_text').val();
 			}
 
+			text = text.replace(/<|>/g, '');
 			this.linkInsert('<a href="' + link + '"' + target + '>' + text + '</a>', $.trim(text), link, targetBlank);
 
 		},
@@ -6441,15 +6460,16 @@
 			var fd = new FormData();
 
 			// append hidden fields
-			if (this.draguploadOptions.uploadFields !== false && typeof this.draguploadOptions.uploadFields === 'object')
+			if (this.opts.uploadFields !== false && typeof this.opts.uploadFields === 'object')
 			{
-				$.each(this.draguploadOptions.uploadFields, $.proxy(function(k, v)
+				$.each(this.opts.uploadFields, $.proxy(function(k, v)
 				{
 					if (v != null && v.toString().indexOf('#') === 0) v = $(v).val();
 					fd.append(k, v);
 
 				}, this));
 			}
+
 
 			// append file data
 			fd.append('file', file);
