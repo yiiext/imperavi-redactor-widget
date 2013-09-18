@@ -1,6 +1,6 @@
 /*
-	Redactor v9.1.2
-	Updated: Aug 27, 2013
+	Redactor v9.1.4
+	Updated: Sep 10, 2013
 
 	http://imperavi.com/redactor/
 
@@ -72,7 +72,7 @@
 	}
 
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '9.1.2';
+	$.Redactor.VERSION = '9.1.4';
 	$.Redactor.opts = {
 
 			// settings
@@ -112,6 +112,7 @@
 			linkProtocol: 'http://',
 			linkNofollow: false,
 
+			imageFloatMargin: '10px',
 			imageGetJson: false, // url (ex. /folder/images.json ) or false
 
 			imageUpload: false, // url
@@ -126,9 +127,11 @@
 			uploadFields: false,
 
 			observeImages: true,
+			observeLinks: true,
 
 			modalOverlay: true,
 
+			tabSpaces: false, // true or number of spaces
 			tabFocus: true,
 
 			air: false,
@@ -278,8 +281,7 @@
 	// Functionality
 	Redactor.fn = $.Redactor.prototype = {
 
-		keyCode:
-		{
+		keyCode: {
 			BACKSPACE: 8,
 			DELETE: 46,
 			DOWN: 40,
@@ -654,6 +656,7 @@
 			clearInterval(this.autosaveInterval);
 
 			$(window).off('.redactor');
+			this.$source.off('redactor-textarea');
 			this.$element.off('.redactor').removeData('redactor');
 
 			var html = this.get();
@@ -797,6 +800,7 @@
 			if ($.trim(html) === '<br>') html = '';
 
 			if (html !== '' && this.opts.tidyHtml) html = this.cleanHtml(html);
+			html = html.replace(/<br>/gi, '<br />');
 
 			// before callback
 			html = this.callback('syncBefore', false, html);
@@ -852,6 +856,8 @@
 			html = html.replace(/<span\s*?>([\w\W]*?)<\/span>/gi, '$1');
 			html = html.replace(/<span\s*?id="selection-marker(.*?)"(.*?)>([\w\W]*?)<\/span>/gi, '');
 			html = html.replace(/<span\s*?>([\w\W]*?)<\/span>/gi, '$1');
+			html = html.replace(/<span(.*?)data-redactor="verified"(.*?)>([\w\W]*?)<\/span>/gi, '<span$1$2>$3</span>');
+			html = html.replace(/<span(.*?)data-redactor-inlineMethods=""(.*?)>([\w\W]*?)<\/span>/gi, '<span$1$2>$3</span>' );
 			html = html.replace(/<span>([\w\W]*?)<\/span>/gi, '$1');
 
 			// amp fix
@@ -1032,6 +1038,14 @@
 			this.$editor.on('keydown.redactor', $.proxy(this.buildEventKeydown, this));
 			this.$editor.on('keyup.redactor', $.proxy(this.buildEventKeyup, this));
 
+
+
+			// textarea callback
+			if ($.isFunction(this.opts.textareaKeydownCallback))
+			{
+				this.$source.on('keydown.redactor-textarea', $.proxy(this.opts.textareaKeydownCallback, this));
+			}
+
 			// focus callback
 			if ($.isFunction(this.opts.focusCallback))
 			{
@@ -1053,16 +1067,10 @@
 		{
 			e = e.originalEvent || e;
 
-			if (window.FormData === undefined)
-			{
-				return true;
-			}
+			if (window.FormData === undefined) return true;
 
 		    var length = e.dataTransfer.files.length;
-		    if (length == 0)
-		    {
-		        return true;
-		    }
+		    if (length == 0) return true;
 
 		    e.preventDefault();
 
@@ -1074,56 +1082,11 @@
 	        }
 
 			this.bufferSet();
-		    var $img = $('<img>');
 
 			var progress = $('<div id="redactor-progress-drag" class="redactor-progress redactor-progress-striped"><div id="redactor-progress-bar" class="redactor-progress-bar" style="width: 100%;"></div></div>');
 			$(document.body).append(progress);
 
-			var fd = new FormData();
-			fd.append('file', file);
-
-			$.ajax({
-				url: this.opts.imageUpload,
-				dataType: 'html',
-				data: fd,
-				cache: false,
-				contentType: false,
-				processData: false,
-				type: 'POST',
-				success: $.proxy(function(data)
-				{
-					progress.fadeOut('slow', function()
-					{
-						$(this).remove();
-					});
-
-					var json = $.parseJSON(data);
-
-					$img.attr('src', json.filelink).attr('id', 'drag-image-marker');
-
-					this.insertNodeToCaretPositionFromPoint(e, $img[0]);
-
-					var image = $(this.$editor.find('img#drag-image-marker'));
-
-					if (image.length) image.removeAttr('id');
-					else image = false;
-
-					this.sync();
-					this.observeImages();
-
-					// upload callback
-					if (image)
-					{
-						this.callback('imageUpload', image, json);
-					}
-
-				}, this),
-				error: $.proxy(function(json)
-				{
-					this.callback('imageUploadError', json);
-
-				}, this)
-			});
+			this.dragUploadAjax(this.opts.imageUpload, file, true, progress, e);
 
 		},
 		buildEventPaste: function(e)
@@ -1183,6 +1146,8 @@
 		{
 			var event = e.originalEvent || e;
 			this.clipboardFilePaste = false;
+
+			if (typeof(event.clipboardData) === 'undefined') return false;
 			if (event.clipboardData.items)
 			{
 				var file = event.clipboardData.items[0].getAsFile();
@@ -1376,6 +1341,14 @@
 					this.insertNode(document.createTextNode('\t'));
 					this.sync();
 					return false;
+
+				}
+				else if (this.opts.tabSpaces !== false)
+				{
+					this.bufferSet();
+					this.insertNode(document.createTextNode(Array(this.opts.tabSpaces + 1).join('\u00a0')));
+					this.sync();
+					return false;
 				}
 				else
 				{
@@ -1443,10 +1416,11 @@
 			{
 				this.formatLinkify(this.opts.linkProtocol, this.opts.convertLinks, this.opts.convertImageLinks, this.opts.convertVideoLinks);
 
-				if (this.opts.convertImageLinks)
+				setTimeout($.proxy(function()
 				{
-					this.observeImages();
-				}
+					if (this.opts.convertImageLinks) this.observeImages();
+					if (this.opts.observeLinks) this.observeLinks();
+				}, this), 5);
 			}
 
 			// if empty
@@ -1711,7 +1685,7 @@
 				this.$source.height(height).show().focus();
 
 				// textarea indenting
-				this.$source.on('keydown.redactor-textarea', function (e)
+				this.$source.on('keydown.redactor-textarea-indenting', function (e)
 				{
 					if (e.keyCode === 9)
 					{
@@ -1753,7 +1727,7 @@
 
 				if (this.opts.fullpage ) this.$editor.attr('contenteditable', true );
 
-				this.$source.off('keydown.redactor-textarea');
+				this.$source.off('keydown.redactor-textarea-indenting');
 
 				this.$editor.focus();
 				this.selectionRestore();
@@ -2091,21 +2065,23 @@
 					keyPosition = $button.offset();
 				}
 
+				// fix right placement
+				var dropdownWidth = $dropdown.width();
+				if ((keyPosition.left + dropdownWidth) > $(document).width())
+				{
+					keyPosition.left -= dropdownWidth;
+				}
+
 				var left = keyPosition.left + 'px';
 				var btnHeight = 29;
 
-				if (this.opts.air)
-				{
-					$dropdown.css({ position: 'absolute', left: left, top: btnHeight + 'px' }).show();
-				}
-				else if (this.opts.toolbarFixed && this.toolbarFixed)
-				{
-					$dropdown.css({ position: 'fixed', left: left, top: btnHeight + 'px' }).show();
-				}
-				else
-				{
-					$dropdown.css({ position: 'absolute', left: left, top: keyPosition.top + btnHeight + 'px' }).show();
-				}
+				var position = 'absolute';
+				var top = btnHeight + 'px';
+
+				if (this.opts.toolbarFixed && this.toolbarFixed) position = 'fixed';
+				else if (!this.opts.air) top = keyPosition.top + btnHeight + 'px';
+
+				$dropdown.css({ position: position, left: left, top: top }).show();
 			}
 
 
@@ -2913,7 +2889,8 @@
 			html = R('</dt><p>', 'gi', '</dt>');
 			html = R('</dd><p>', 'gi', '</dd>');
 			html = R('<br></p></blockquote>', 'gi', '</blockquote>');
-			html = R('<p>    </p>', 'gi', '');
+			html = R('<p>\t*</p>', 'gi', '');
+
 
 			// restore safes
 			$.each(safes, function(i,s)
@@ -3553,7 +3530,7 @@
 			var range = this.getRange()
 			var el = this.getElement();
 
-			if (range.collapsed || range.startContainer === range.endContainer && el)
+			if ((range.collapsed || range.startContainer === range.endContainer) && el && !this.nodeTestBlocks(el))
 			{
 				$(el)[type](attr, value);
 			}
@@ -3901,6 +3878,7 @@
 				html = this.cleanParagraphy(html);
 
 				this.pasteInsert(html);
+				return false;
 			}
 
 			// clean up pre
@@ -4215,6 +4193,17 @@
 		{
 			this.observeImages();
 			this.observeTables();
+
+			if (this.opts.observeLinks) this.observeLinks();
+		},
+		observeLinks: function()
+		{
+			this.$editor.find('a').on('click', $.proxy(this.linkObserver, this));
+			this.$editor.on('click.redactor', $.proxy(function(e)
+			{
+				this.linkObserverTooltipClose(e);
+
+			}, this));
 		},
 		observeTables: function()
 		{
@@ -4230,6 +4219,62 @@
 				this.imageResize(elem);
 
 			}, this));
+		},
+		linkObserver: function(e)
+		{
+			var $link = $(e.target);
+			var pos = $link.offset();
+			if (this.opts.iframe)
+			{
+				var posFrame = this.$frame.offset();
+				pos.top = posFrame.top + (pos.top - $(this.document).scrollTop());
+				pos.left += posFrame.left;
+			}
+
+			var tooltip = $('<span class="redactor-link-tooltip"></span>');
+
+			var href = $link.attr('href');
+			if (href.length > 24) href = href.substring(0,24) + '...';
+
+			var aLink = $('<a href="' + $link.attr('href') + '" target="_blank">' + href + '</a>').on('click', $.proxy(function(e)
+			{
+				this.linkObserverTooltipClose(false);
+			}, this));
+
+			var aEdit = $('<a href="#">' + this.opts.curLang.edit + '</a>').on('click', $.proxy(function(e)
+			{
+				e.preventDefault();
+				this.linkShow();
+				this.linkObserverTooltipClose(false);
+
+			}, this));
+
+			var aUnlink = $('<a href="#">' + this.opts.curLang.unlink + '</a>').on('click', $.proxy(function(e)
+			{
+				e.preventDefault();
+				this.execCommand('unlink');
+				this.linkObserverTooltipClose(false);
+
+			}, this));
+
+
+			tooltip.append(aLink);
+			tooltip.append(' | ');
+			tooltip.append(aEdit);
+			tooltip.append(' | ');
+			tooltip.append(aUnlink);
+			tooltip.css({
+				top: (pos.top + 20) + 'px',
+				left: pos.left + 'px'
+			});
+
+			$('.redactor-link-tooltip').remove();
+			$('body').append(tooltip);
+		},
+		linkObserverTooltipClose: function(e)
+		{
+			if (e !== false && e.target.tagName == 'A') return false;
+			$('.redactor-link-tooltip').remove();
 		},
 
 
@@ -4798,7 +4843,7 @@
 			this.selectionRestore();
 
 			var current = this.getBlock() || this.getCurrent();
-			if (current)
+			if (current && current.tagName != 'BODY')
 			{
 				$(current).after(html)
 			}
@@ -5446,11 +5491,11 @@
 
 			if (floating === 'left')
 			{
-				$el.css({ 'float': 'left', 'margin': '0 10px 10px 0' });
+				$el.css({ 'float': 'left', 'margin': '0 ' + this.opts.imageFloatMargin + ' ' + this.opts.imageFloatMargin + ' 0' });
 			}
 			else if (floating === 'right')
 			{
-				$el.css({ 'float': 'right', 'margin': '0 0 10px 10px' });
+				$el.css({ 'float': 'right', 'margin': '0 0 ' + this.opts.imageFloatMargin + ' ' + this.opts.imageFloatMargin + '' });
 			}
 			else
 			{
@@ -6441,23 +6486,31 @@
 
 				this.dropareabox.removeClass('hover').addClass('drop');
 
-				//this.handleFileSelect(e);
-				this.draguploadUpload(e.dataTransfer.files[0]);
+				this.dragUploadAjax(this.draguploadOptions.url, e.dataTransfer.files[0], false);
 
 			}, this );
 		},
-		draguploadUpload: function(file)
+		dragUploadAjax: function(url, file, directupload, progress, e)
 		{
-			var xhr = jQuery.ajaxSettings.xhr();
 
-			if (xhr.upload)
+
+			if (!directupload)
 			{
-				xhr.upload.addEventListener('progress', $.proxy(this.uploadProgress, this), false);
+				var xhr = $.ajaxSettings.xhr();
+				if (xhr.upload)
+				{
+					xhr.upload.addEventListener('progress', $.proxy(this.uploadProgress, this), false);
+				}
+
+				$.ajaxSetup({
+				  xhr: function () { return xhr; }
+				});
 			}
 
-			var provider = function () { return xhr; };
-
 			var fd = new FormData();
+
+			// append file data
+			fd.append('file', file);
 
 			// append hidden fields
 			if (this.opts.uploadFields !== false && typeof this.opts.uploadFields === 'object')
@@ -6470,15 +6523,10 @@
 				}, this));
 			}
 
-
-			// append file data
-			fd.append('file', file);
-
 			$.ajax({
-				url: this.draguploadOptions.url,
+				url: url,
 				dataType: 'html',
 				data: fd,
-				xhr: provider,
 				cache: false,
 				contentType: false,
 				processData: false,
@@ -6490,19 +6538,46 @@
 
 					var json = $.parseJSON(data);
 
-					if (typeof json.error == 'undefined')
+					if (directupload)
 					{
-						this.draguploadOptions.success(json);
+						progress.fadeOut('slow', function()
+						{
+							$(this).remove();
+						});
+
+					    var $img = $('<img>');
+						$img.attr('src', json.filelink).attr('id', 'drag-image-marker');
+
+						this.insertNodeToCaretPositionFromPoint(e, $img[0]);
+
+						var image = $(this.$editor.find('img#drag-image-marker'));
+						if (image.length) image.removeAttr('id');
+						else image = false;
+
+						this.sync();
+						this.observeImages();
+
+						// upload callback
+						if (image) this.callback('imageUpload', image, json);
+
+						// error callback
+						if (typeof json.error !== 'undefined') this.callback('imageUploadError', json);
 					}
 					else
 					{
-						this.draguploadOptions.error(this, json);
-						this.draguploadOptions.success(false);
+						if (typeof json.error == 'undefined')
+						{
+							this.draguploadOptions.success(json);
+						}
+						else
+						{
+							this.draguploadOptions.error(this, json);
+							this.draguploadOptions.success(false);
+						}
 					}
 
 				}, this)
 			});
-
 		},
 		draguploadOndrag: function()
 		{
@@ -6654,7 +6729,8 @@
 		var url1 = /(^|&lt;|\s)(www\..+?\..+?)(\s|&gt;|$)/g,
 			url2 = /(^|&lt;|\s)(((https?|ftp):\/\/|mailto:).+?)(\s|&gt;|$)/g,
 			urlImage = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/gi,
-			urlYoutube = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+			urlYoutube = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/,
+			urlVimeo = /http:\/\/(www\.)?vimeo.com\/(\d+)($|\/)/;
 
 		var childNodes = (this.$editor ? this.$editor.get(0) : this).childNodes, i = childNodes.length;
 		while (i--)
@@ -6664,28 +6740,45 @@
 			{
 				var html = n.nodeValue;
 
-				// youtube
-				if (convertVideoLinks && html && html.match(urlYoutube))
+				// youtube & vimeo
+				if (convertVideoLinks && html)
 				{
-					html = html.replace(urlYoutube, '<iframe width="560" height="315" src="//www.youtube.com/embed/$2" frameborder="0" allowfullscreen></iframe>');
-					$(n).after(html).remove();
+					var iframeStart = '<iframe width="500" height="281" src="',
+						iframeEnd = '" frameborder="0" allowfullscreen></iframe>';
+
+					if (html.match(urlYoutube))
+					{
+						html = html.replace(urlYoutube, iframeStart + '//www.youtube.com/embed/$2' + iframeEnd);
+						$(n).after(html).remove();
+					}
+					else if (html.match(urlVimeo))
+					{
+						html = html.replace(urlVimeo, iframeStart + '//player.vimeo.com/video/$2' + iframeEnd);
+						$(n).after(html).remove();
+					}
 				}
 
 				// image
-				else if (convertImageLinks && html && html.match(urlImage))
+				if (convertImageLinks && html && html.match(urlImage))
 				{
 					html = html.replace(urlImage, '<img src="$1">');
+
 					$(n).after(html).remove();
 				}
 
 				// link
-				else if (convertLinks && html && (html.match(url1) || html.match(url2)))
+				if (convertLinks && html && (html.match(url1) || html.match(url2)))
 				{
+					var href = (html.match(url1) || html.match(url2));
+					href = href[0];
+					if (href.length > 50) href = href.substring(0, 50) + '...';
+
 					html = html.replace(/&/g, '&amp;')
 					.replace(/</g, '&lt;')
 					.replace(/>/g, '&gt;')
-					.replace(url1, '$1<a href="' + protocol + '$2">$2</a>$3')
-					.replace(url2, '$1<a href="$2">$2</a>$5');
+					.replace(url1, '$1<a href="' + protocol + '$2">' + href + '</a>$3')
+					.replace(url2, '$1<a href="$2">' + href + '</a>$5');
+
 
 					$(n).after(html).remove();
 				}
