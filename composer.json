@@ -19,8 +19,5 @@
 	"support": {
 		"issues": "https://github.com/yiiext/imperavi-redactor-widget/issues?state=open",
 		"source": "https://github.com/yiiext/imperavi-redactor-widget/"
-	},
-	"autoload": {
-		"files": ["ImperaviRedactorWidget.php"]
 	}
 }
