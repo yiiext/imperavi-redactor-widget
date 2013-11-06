@@ -39,16 +39,16 @@ class ImperaviRedactorWidget extends CInputWidget
 	 */
 	public $package = array();
 
-	/**
-	 * @var array
-	 */
-	private $_plugins = array();
-
         /**
          * Use minified version
          * @var type 
          */
-        private $minify = YII_DEBUG;
+        public $minify = YII_DEBUG;
+
+	/**
+	 * @var array
+	 */
+	private $_plugins = array();
 
 	/**
 	 * Init widget.
