@@ -1,6 +1,11 @@
 Changelog
 =========
 
+next
+----
+
+- Update plugins (Veaceslav Medvedev)
+
 1.2.15
 ------
 
