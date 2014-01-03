@@ -1,6 +1,6 @@
 /*
-	Redactor v9.1.8
-	Updated: Nov 20, 2013
+	Redactor v9.1.9
+	Updated: Dec 12, 2013
 
 	http://imperavi.com/redactor/
 
@@ -71,7 +71,7 @@
 	}
 
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '9.1.8';
+	$.Redactor.VERSION = '9.1.9';
 	$.Redactor.opts = {
 
 			// settings
@@ -301,7 +301,6 @@
 		// Initialization
 		init: function(el, options)
 		{
-
 			this.rtePaste = false;
 			this.$element = this.$source = $(el);
 			this.uuid = uuid++;
@@ -738,6 +737,7 @@
 		set: function(html, strip, placeholderRemove)
 		{
 			html = html.toString();
+			html = html.replace(/\$/g, '&#36;');
 
 			if (this.opts.fullpage) this.setCodeIframe(html);
 			else this.setEditor(html, strip);
@@ -747,16 +747,21 @@
 		},
 		setEditor: function(html, strip)
 		{
+
 			if (strip !== false)
 			{
 				html = this.cleanSavePreCode(html);
+
 				html = this.cleanStripTags(html);
 				html = this.cleanConvertProtected(html);
 				html = this.cleanConvertInlineTags(html, true);
 
-				if (this.opts.linebreaks === false) html = this.cleanConverters(html);
+				if (this.opts.linebreaks === false)	html = this.cleanConverters(html);
 				else html = html.replace(/<p(.*?)>([\w\W]*?)<\/p>/gi, '$2<br>');
 			}
+
+			// $ fix
+			html = html.replace(/&amp;#36;/g, '$');
 
 			html = this.cleanEmpty(html);
 
@@ -925,6 +930,7 @@
 			html = html.replace(/<inline /gi, '<span ');
 			html = html.replace(/<\/inline>/gi, '</span>');
 			html = html.replace(/<span(.*?)class="redactor_placeholder"(.*?)>([\w\W]*?)<\/span>/gi, '');
+			html = html.replace(/<span>([\w\W]*?)<\/span>/gi, '$1');
 
 			// fixes
 			html = html.replace(/&amp;/gi, '&');
@@ -1043,7 +1049,7 @@
 			if (this.opts.maxHeight)
 			{
 				this.opts.autoresize = false;
-				$source.css('max-height', this.opts.maxHeight + 'px');
+				this.sourceHeight = this.opts.maxHeight;
 			}
 			if (this.opts.wym) this.$editor.addClass('redactor_editor_wym');
 			if (!this.opts.autoresize) $source.css('height', this.sourceHeight);
@@ -1367,8 +1373,6 @@
 					}
 					else this.dblEnter++;
 				}
-
-
 
 				// pre
 				if (pre === true) return this.buildEventKeydownPre(e, current);
@@ -2249,6 +2253,7 @@
 			this.$editor.one('click', hdlHideDropDown);
 
 			e.stopPropagation();
+			this.$editor.focus();
 		},
 		dropdownHideAll: function()
 		{
@@ -2491,14 +2496,47 @@
 		},
 
 		// EXEC
+		execPasteFrag: function(html)
+		{
+			var sel = this.getSelection();
+			if (sel.getRangeAt && sel.rangeCount)
+			{
+            	range = sel.getRangeAt(0);
+				range.deleteContents();
+
+				var el = document.createElement("div");
+				el.innerHTML = html;
+				var frag = document.createDocumentFragment(), node, lastNode;
+				while ((node = el.firstChild))
+				{
+	                lastNode = frag.appendChild(node);
+				}
+
+				var firstNode = frag.firstChild;
+				range.insertNode(frag);
+
+				if (lastNode)
+				{
+	                range = range.cloneRange();
+	                range.setStartAfter(lastNode);
+                    range.collapse(true);
+	                sel.removeAllRanges();
+	                sel.addRange(range);
+				}
+			}
+		},
 		exec: function(cmd, param, sync)
 		{
 			if (cmd === 'formatblock' && this.browser('msie')) param = '<' + param + '>';
 
 			if (cmd === 'inserthtml' && this.browser('msie'))
 			{
-				this.$editor.focus();
-				this.document.selection.createRange().pasteHTML(param);
+				if (!this.isIe11())
+				{
+					this.$editor.focus();
+					this.document.selection.createRange().pasteHTML(param);
+				}
+				else this.execPasteFrag(param);
 			}
 			else
 			{
@@ -2632,6 +2670,14 @@
 
 				if ($list.length)
 				{
+					// focus fix
+					var li = $list.children().first();
+					if ($.trim($(li).text()) == '')
+					{
+						var marker = $('<span id="selection-marker-1"></span>');
+						$(li).prepend(marker);
+					}
+
 					if ((this.browser('msie') || this.browser('mozilla')) && parent.tagName !== 'LI')
 					{
 						$(parent).replaceWith($(parent).html());
@@ -2645,10 +2691,10 @@
 				}
 
 				if (this.browser('mozilla')) this.$editor.focus();
-
 			}
 
 			this.selectionRestore();
+			$(marker).remove();
 
 			this.sync();
 			this.callback('execCommand', cmd, param);
@@ -3088,7 +3134,13 @@
                 {
 					if (htmls[i].search('{replace') == -1)
 					{
-						html += '<p>' +  htmls[i].replace(/^\n+|\n+$/g, "") + "</p>";
+						htmls[i] = htmls[i].replace(/<p>\n\t<\/p>/gi, '');
+						htmls[i] = htmls[i].replace(/<p><\/p>/gi, '');
+
+						if (htmls[i] != '')
+						{
+							html += '<p>' +  htmls[i].replace(/^\n+|\n+$/g, "") + "</p>";
+						}
 					}
 					else html += htmls[i];
 				}
@@ -3115,7 +3167,6 @@
 			html = R('</dd><p>', 'gi', '</dd>');
 			html = R('<br></p></blockquote>', 'gi', '</blockquote>');
 			html = R('<p>\t*</p>', 'gi', '');
-
 
 			// restore safes
 			$.each(safes, function(i,s)
@@ -3188,6 +3239,9 @@
 
 					if (encode !== false) arr[3] = this.cleanEncodeEntities(arr[3]);
 
+					// $ fix
+					arr[3] = arr[3].replace(/\$/g, '&#36;');
+
 					html = html.replace(s, '<' + arr[1] + arr[2] + '>' + arr[3] + '</' + arr[1] + '>');
 
 				}, this));
@@ -3198,7 +3252,7 @@
 		cleanEncodeEntities: function(str)
 		{
 			str = String(str).replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
-			return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+			return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 		},
 		cleanUnverified: function()
 		{
@@ -3841,17 +3895,21 @@
 					this.inlineSetMethods(type, s, attr, value);
 
 				}, this));
+
 			}
 
 			this.selectionRestore();
-
 			this.sync();
 		},
 		inlineSetMethods: function(type, s, attr, value)
 		{
 			var parent = $(s).parent(), el;
 
-			if (parent && parent[0].tagName === 'INLINE' && parent[0].attributes.length != 0)
+			var selectionHtml = this.getSelectionText();
+			var parentHtml = $(parent).text();
+			var selected = selectionHtml == parentHtml;
+
+			if (selected && parent && parent[0].tagName === 'INLINE' && parent[0].attributes.length != 0)
 			{
 				el = parent;
 				$(s).replaceWith($(s).html());
@@ -3861,6 +3919,7 @@
 				el = $('<inline>').append($(s).contents());
 				$(s).replaceWith(el);
 			}
+
 
 			$(el)[type](attr, value);
 
@@ -3884,7 +3943,11 @@
 			{
 				if (!collapsed && node.tagName !== 'INLINE')
 				{
-					if (node.parentNode.tagName === 'INLINE' && !$(node.parentNode).hasClass('redactor_editor'))
+					var selectionHtml = this.getSelectionText();
+					var parentHtml = $(node).parent().text();
+					var selected = selectionHtml == parentHtml;
+
+					if (selected && node.parentNode.tagName === 'INLINE' && !$(node.parentNode).hasClass('redactor_editor'))
 					{
 						node = node.parentNode;
 					}
@@ -3993,9 +4056,19 @@
 			html = this.setSpansVerifiedHtml(html);
 
 			if ($html.contents().length > 1 && currBlock
-					|| $html.contents().is('p, :header, ul, ol, li, div, table, td, blockquote, pre, address, section, header, footer, aside, article'))
+			|| $html.contents().is('p, :header, ul, ol, li, div, table, td, blockquote, pre, address, section, header, footer, aside, article'))
 			{
-				if (this.browser('msie')) this.document.selection.createRange().pasteHTML(html);
+				if (this.browser('msie'))
+				{
+					if (!this.isIe11())
+					{
+						this.document.selection.createRange().pasteHTML(html);
+					}
+					else
+					{
+						this.execPasteFrag(html);
+					}
+				}
 				else this.document.execCommand('inserthtml', false, html);
 			}
 			else this.insertHtmlAdvanced(html, false);
@@ -4019,6 +4092,8 @@
 		},
 		insertHtmlAdvanced: function(html, sync)
 		{
+			html = this.setSpansVerifiedHtml(html);
+
 			var sel = this.getSelection();
 
 			if (sel.getRangeAt && sel.rangeCount)
@@ -4080,7 +4155,7 @@
 
 			this.$editor.focus();
 
-			if (this.browser('msie')) this.document.selection.createRange().pasteHTML(html);
+			if (this.browser('msie') && !this.isIe11()) this.document.selection.createRange().pasteHTML(html);
 			else this.document.execCommand('inserthtml', false, html);
 
 			this.sync();
@@ -4250,7 +4325,6 @@
 				return true;
 			}
 
-
 			// ms word list
 			html = html.replace(/<p(.*?)class="MsoListParagraphCxSpFirst"([\w\W]*?)<\/p>/gi, '<ul><li$2</li>');
 			html = html.replace(/<p(.*?)class="MsoListParagraphCxSpMiddle"([\w\W]*?)<\/p>/gi, '<li$2</li>');
@@ -4329,7 +4403,6 @@
 				html = this.cleanParagraphy(html);
 			}
 
-
 			// remove span
 			html = html.replace(/<span(.*?)>([\w\W]*?)<\/span>/gi, '$2');
 
@@ -4398,6 +4471,12 @@
 				html = html.replace(/<font>([\w\W]*?)<\/font>/gi, '$1');
 			}
 
+			// ms word lists breakline
+			html = html.replace(/<p>\n?<li>/gi, '<li>');
+			if (this.browser('msie') && !this.isIe11())
+			{
+				html = html.replace(/\n/g, '');
+			}
 
 			this.pasteInsert(html);
 
@@ -4573,6 +4652,11 @@
 		{
 			this.$editor.find('a').on('click', $.proxy(this.linkObserver, this));
 			this.$editor.on('click.redactor', $.proxy(function(e)
+			{
+				this.linkObserverTooltipClose(e);
+
+			}, this));
+			$(document).on('click.redactor', $.proxy(function(e)
 			{
 				this.linkObserverTooltipClose(e);
 
@@ -4820,7 +4904,7 @@
 			var el = false;
 			var sel = this.getSelection();
 
-			if (sel.rangeCount > 0) el = sel.getRangeAt(0).startContainer;
+			if (sel && sel.rangeCount > 0) el = sel.getRangeAt(0).startContainer;
 
 			return this.isParentRedactor(el);
 		},
@@ -5536,14 +5620,22 @@
 				}
 				else
 				{
-					this.exec('inserthtml', a);
+					var $a = $(a).addClass('redactor-added-link');
+					this.exec('inserthtml', this.outerHtml($a), false);
+					this.$editor.find('a.redactor-added-link').removeAttr('style').removeClass('redactor-added-link').each(function()
+					{
+						if (this.className == '') $(this).removeAttr('class');
+					});
+					this.sync();
 				}
 			}
 
 			// link tooltip
 			setTimeout($.proxy(function()
 			{
+
 				if (this.opts.observeLinks) this.observeLinks();
+
 			}, this), 5);
 
 			this.modalClose();
@@ -6161,7 +6253,6 @@
 		{
 			this.selectionRestore();
 
-
 			if (json !== false)
 			{
 				var html = '';
@@ -6551,7 +6642,7 @@
 			xhr.open('GET', this.opts.s3 + mark + 'name=' + file.name + '&type=' + file.type, true);
 
 			// Hack to pass bytes through unprocessed.
-			xhr.overrideMimeType('text/plain; charset=x-user-defined');
+			if (xhr.overrideMimeType) xhr.overrideMimeType('text/plain; charset=x-user-defined');
 
 			xhr.onreadystatechange = function(e)
 			{
@@ -7013,20 +7104,30 @@
 
 			return html == '';
 		},
+		isIe11: function()
+		{
+			return !!navigator.userAgent.match(/Trident\/7\./);
+		},
 		browser: function(browser)
 		{
 			var ua = navigator.userAgent.toLowerCase();
-			var match = /(chrome)[ \/]([\w.]+)/.exec(ua)
-					|| /(webkit)[ \/]([\w.]+)/.exec(ua)
-					|| /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua)
-					|| /(msie) ([\w.]+)/.exec(ua)
-					|| ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua)
-					|| [];
+			var match = /(opr)[\/]([\w.]+)/.exec( ua ) ||
+            /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+            /(webkit)[ \/]([\w.]+).*(safari)[ \/]([\w.]+)/.exec(ua) ||
+            /(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+            /(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+            /(msie) ([\w.]+)/.exec( ua ) ||
+            ua.indexOf("trident") >= 0 && /(rv)(?::| )([\w.]+)/.exec( ua ) ||
+            ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+            [];
 
 			if (browser == 'version') return match[2];
 			if (browser == 'webkit') return (match[1] == 'chrome' || match[1] == 'webkit');
+			if (match[1] == 'rv') return browser == 'msie';
+			if (match[1] == 'opr') return browser == 'webkit';
 
-			return match[1] == browser;
+			return browser == match[1];
+
 		},
 		oldIE: function()
 		{
