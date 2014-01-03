@@ -1,9 +1,10 @@
 Changelog
 =========
 
-next
+1.2.16
 ----
 
+- Imperavi redactor updated to 9.1.9 (Veaceslav Medvedev)
 - Update plugins (Veaceslav Medvedev)
 
 1.2.15
