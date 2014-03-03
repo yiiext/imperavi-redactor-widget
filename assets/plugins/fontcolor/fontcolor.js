@@ -14,8 +14,6 @@ RedactorPlugins.fontcolor = {
 
 		var buttons = ['fontcolor', 'backcolor'];
 
-		this.buttonAddSeparator();
-
 		for (var i = 0; i < 2; i++)
 		{
 			var name = buttons[i];

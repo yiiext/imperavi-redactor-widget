@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.2.18
+------
+
+- Fixed partially committed files (samdark)
+
 1.2.17
 ------
 
