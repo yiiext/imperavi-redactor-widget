@@ -1,6 +1,6 @@
 /*
-	Redactor v9.2
-	Updated: Feb 27, 2014
+	Redactor v9.2.1
+	Updated: Mar 19, 2014
 
 	http://imperavi.com/redactor/
 
@@ -71,7 +71,7 @@
 	}
 
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '9.2';
+	$.Redactor.VERSION = '9.2.1';
 	$.Redactor.opts = {
 
 			// settings
@@ -84,7 +84,7 @@
 			lang: 'en',
 			direction: 'ltr', // ltr or rtl
 
-			placeholder: false,
+			placeholder: '',
 
 			typewriter: false,
 			wym: false,
@@ -93,6 +93,8 @@
 			tidyHtml: true,
 			pastePlainText: false,
 			removeEmptyTags: true,
+			cleanSpaces: true,
+			cleanFontTag: true,
 			templateVars: false,
 			xhtml: false,
 
@@ -109,8 +111,8 @@
 
 			plugins: false, // array
 
-			linkAnchor: true,
-			linkEmail: true,
+			//linkAnchor: true,
+			//linkEmail: true,
 			linkProtocol: 'http://',
 			linkNofollow: false,
 			linkSize: 50,
@@ -153,10 +155,13 @@
 			toolbarOverflow: false,
 			buttonSource: true,
 
-			buttons: ['html', '|', 'formatting', 'bold', 'italic', 'deleted', 'unorderedlist', 'orderedlist', 'outdent', 'indent', 'image', 'video', 'file', 'table', 'link', 'alignment', 'horizontalrule'], // 'underline', 'alignleft', 'aligncenter', 'alignright', 'justify'
+			buttons: ['html', 'formatting', 'bold', 'italic', 'deleted', 'unorderedlist', 'orderedlist',
+					  'outdent', 'indent', 'image', 'video', 'file', 'table', 'link', 'alignment', '|',
+					  'horizontalrule'], // 'underline', 'alignleft', 'aligncenter', 'alignright', 'justify'
 			buttonsHideOnMobile: [],
 
-			activeButtons: ['deleted', 'italic', 'bold', 'underline', 'unorderedlist', 'orderedlist', 'alignleft', 'aligncenter', 'alignright', 'justify', 'table'],
+			activeButtons: ['deleted', 'italic', 'bold', 'underline', 'unorderedlist', 'orderedlist',
+							'alignleft', 'aligncenter', 'alignright', 'justify', 'table'],
 			activeButtonsStates: {
 				b: 'bold',
 				strong: 'bold',
@@ -206,6 +211,7 @@
 			blockLevelElements: ['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DD', 'DL', 'DT', 'DIV', 'LI',
 								'BLOCKQUOTE', 'OUTPUT', 'FIGCAPTION', 'PRE', 'ADDRESS', 'SECTION',
 								'HEADER', 'FOOTER', 'ASIDE', 'ARTICLE', 'TD'],
+
 			// lang
 			langs: {
 				en: {
@@ -586,16 +592,6 @@
 						}
 					}
 				},
-				fontcolor:
-				{
-					title: lang.fontcolor,
-					func: 'show'
-				},
-				backcolor:
-				{
-					title: lang.backcolor,
-					func: 'show'
-				},
 				alignment:
 				{
 					title: lang.alignment,
@@ -749,7 +745,7 @@
 			else this.setEditor(html, strip);
 
 			if (html == '') placeholderRemove = false;
-			if (placeholderRemove !== false) this.placeholderRemove();
+			if (placeholderRemove !== false) this.placeholderRemoveFromEditor();
 		},
 		setEditor: function(html, strip)
 		{
@@ -849,7 +845,7 @@
 		},
 
 		// SYNC
-		sync: function()
+		sync: function(e)
 		{
 			var html = '';
 
@@ -898,7 +894,27 @@
 
 			if (this.start === false)
 			{
-				this.callback('change', false, html);
+
+				if (typeof e != 'undefined')
+				{
+					switch(e.which)
+					{
+				        case 37: // left
+				        break;
+				        case 38: // up
+				        break;
+				        case 39: // right
+				        break;
+				        case 40: // down
+				        break;
+
+						default: this.callback('change', false, html);
+					}
+				}
+				else
+				{
+					this.callback('change', false, html);
+				}
 			}
 
 		},
@@ -945,14 +961,14 @@
 			html = html.replace(/<span(.*?)id="redactor-image-resizer"(.*?)>(.*?)<\/span>/gi, '');
 			html = html.replace(/<span(.*?)id="redactor-image-editter"(.*?)>(.*?)<\/span>/gi, '');
 
-			// remove any styles form ul, ol, li
-			html = html.replace(/<(ul|ol|li)(.*?) style="(.*?)"(.*?)>/gi, '<$1$2$4>');
-
 			// remove empty lists
 			html = html.replace(/<(ul|ol)>\s*\t*\n*<\/(ul|ol)>/gi, '');
 
 			// remove font
-			html = html.replace(/<font(.*?)>([\w\W]*?)<\/font>/gi, '$2');
+			if (this.opts.cleanFontTag)
+			{
+				html = html.replace(/<font(.*?)>([\w\W]*?)<\/font>/gi, '$2');
+			}
 
 			// remove spans
 			html = html.replace(/<span(.*?)>([\w\W]*?)<\/span>/gi, '$2');
@@ -962,10 +978,13 @@
 			html = html.replace(/<span(.*?)class="redactor_placeholder"(.*?)>([\w\W]*?)<\/span>/gi, '');
 			html = html.replace(/<span>([\w\W]*?)<\/span>/gi, '$1');
 
-			// fixes
+			// special characters
 			html = html.replace(/&amp;/gi, '&');
 			html = html.replace(/™/gi, '&trade;');
 			html = html.replace(/©/gi, '&copy;');
+			html = html.replace(/…/gi, '&hellip;');
+			html = html.replace(/—/gi, '&mdash;');
+			html = html.replace(/‐/gi, '&dash;');
 
 
 			html = this.cleanReConvertProtected(html);
@@ -1076,7 +1095,20 @@
 
 			// options
 			if (this.opts.tabindex) $source.attr('tabindex', this.opts.tabindex);
+
 			if (this.opts.minHeight) $source.css('min-height', this.opts.minHeight + 'px');
+			// FF fix bug with line-height rendering
+			else if (this.browser('mozilla') && this.opts.linebreaks)
+			{
+				this.$editor.css('min-height', '45px');
+			}
+			// FF fix bug with line-height rendering
+			if (this.browser('mozilla') && this.opts.linebreaks)
+			{
+				this.$editor.css('padding-bottom', '10px');
+			}
+
+
 			if (this.opts.maxHeight)
 			{
 				this.opts.autoresize = false;
@@ -1085,6 +1117,7 @@
 			if (this.opts.wym) this.$editor.addClass('redactor_editor_wym');
 			if (this.opts.typewriter) this.$editor.addClass('redactor-editor-typewriter');
 			if (!this.opts.autoresize) $source.css('height', this.sourceHeight);
+
 		},
 		buildAfter: function()
 		{
@@ -1212,6 +1245,7 @@
 				this.s3uploadFile(file);
 			}
 
+
 		},
 		buildEventPaste: function(e)
 		{
@@ -1241,7 +1275,7 @@
 					if (this.opts.autoresize === true && this.fullscreen !== true)
 					{
 						this.$editor.height(this.$editor.height());
-						this.saveScroll = this.document.documentElement.scrollTop;
+						this.saveScroll = this.document.body.scrollTop;
 					}
 					else
 					{
@@ -1304,6 +1338,13 @@
 
 			this.callback('keydown', e);
 
+			// disabling cmd|ctrl + left
+			if (this.browser('mozilla') && ctrl && key === 37)
+			{
+				e.preventDefault();
+				return false;
+			}
+
 			this.imageResizeHide(false);
 
 			// pre & down
@@ -1361,11 +1402,25 @@
 				this.bufferSet();
 				this.selectall = true;
 			}
-			else if (key != this.keyCode.LEFT_WIN && !ctrl) this.selectall = false;
+			else if (key != this.keyCode.LEFT_WIN && !ctrl)
+			{
+				this.selectall = false;
+			}
 
 			// enter
 			if (key == this.keyCode.ENTER && !e.shiftKey && !e.ctrlKey && !e.metaKey )
 			{
+				//
+				var range = this.getRange();
+				if (range && range.collapsed === false)
+				{
+					sel = this.getSelection();
+					if (sel.rangeCount)
+					{
+						range.deleteContents();
+					}
+				}
+
 				// In ie, opera in the tables are created paragraphs, fix it.
 				if (this.browser('msie') && (parent.nodeType == 1 && (parent.tagName == 'TD' || parent.tagName == 'TH')))
 				{
@@ -1497,8 +1552,8 @@
 				this.insertLineBreak();
 			}
 
-			// tab
-			if (key === this.keyCode.TAB && this.opts.shortcuts)
+			// tab (cmd + [)
+			if ((key === this.keyCode.TAB || e.metaKey && key === 219) && this.opts.shortcuts)
 			{
 				return this.buildEventKeydownTab(e, pre, key);
 			}
@@ -1566,6 +1621,7 @@
 
 			if (typeof current.nodeValue !== 'undefined' && current.nodeValue !== null)
 			{
+
 				//var value = $.trim(current.nodeValue.replace(/[^\u0000-\u1C7F]/g, ''));
 				if (current.remove && current.nodeType === 3 && current.nodeValue.match(/[^\u200B]/g) == null)
 				{
@@ -1599,6 +1655,7 @@
 				{
 					next.remove();
 				}
+
 				this.selectionEnd(node);
 			}
 
@@ -1615,7 +1672,7 @@
 			}
 
 			this.callback('keyup', e);
-			this.sync();
+			this.sync(e);
 		},
 		buildEventKeyupConverters: function()
 		{
@@ -1742,23 +1799,33 @@
 		{
 			if (this.isEmpty(html))
 			{
-				if (this.$element.attr('placeholder')) this.opts.placeholder = this.$element.attr('placeholder');
-				if (this.opts.placeholder === '') this.opts.placeholder = false;
+				if (this.$element.attr('placeholder'))
+				{
+					this.opts.placeholder = this.$element.attr('placeholder');
+				}
 
-				if (this.opts.placeholder !== false)
+				if (this.opts.placeholder !== '')
 				{
 					this.opts.focus = false;
-					this.placeholderEvents();
+					this.placeholderOnFocus();
+					this.placeholderOnBlur();
 
 					return this.placeholderGet();
 				}
 			}
+			else
+			{
+				this.placeholderOnBlur();
+			}
 
 			return false;
 		},
-		placeholderEvents: function()
+		placeholderOnFocus: function()
 		{
 			this.$editor.on('focus.redactor_placeholder', $.proxy(this.placeholderFocus, this));
+		},
+		placeholderOnBlur: function()
+		{
 			this.$editor.on('blur.redactor_placeholder', $.proxy(this.placeholderBlur, this));
 		},
 		placeholderGet: function()
@@ -1770,7 +1837,7 @@
 			var html = this.get();
 			if (this.isEmpty(html))
 			{
-				this.$editor.on('focus.redactor_placeholder', $.proxy(this.placeholderFocus, this));
+				this.placeholderOnFocus();
 				this.$editor.html(this.placeholderGet());
 			}
 		},
@@ -1779,7 +1846,10 @@
 			this.$editor.find('span.redactor_placeholder').remove();
 
 			var html = '';
-			if (this.opts.linebreaks === false) html = this.opts.emptyHtml;
+			if (this.opts.linebreaks === false)
+			{
+				html = this.opts.emptyHtml;
+			}
 
 			this.$editor.off('focus.redactor_placeholder');
 			this.$editor.html(html);
@@ -1796,9 +1866,8 @@
 
 			this.sync();
 		},
-		placeholderRemove: function()
+		placeholderRemoveFromEditor: function()
 		{
-			this.opts.placeholder = false;
 			this.$editor.find('span.redactor_placeholder').remove();
 			this.$editor.off('focus.redactor_placeholder');
 		},
@@ -1811,31 +1880,21 @@
 		shortcuts: function(e, key)
 		{
 
-			if (!this.opts.shortcuts) return;
-
-			if (!e.altKey)
+			if (!this.opts.shortcuts)
 			{
-				if (key === 77) this.shortcutsLoad(e, 'removeFormat'); // Ctrl + m
-				else if (key === 66) this.shortcutsLoad(e, 'bold'); // Ctrl + b
-				else if (key === 73) this.shortcutsLoad(e, 'italic'); // Ctrl + i
-
-				else if (key === 74) this.shortcutsLoad(e, 'insertunorderedlist'); // Ctrl + j
-				else if (key === 75) this.shortcutsLoad(e, 'insertorderedlist'); // Ctrl + k
-
-				else if (key === 72) this.shortcutsLoad(e, 'superscript'); // Ctrl + h
-				else if (key === 76) this.shortcutsLoad(e, 'subscript'); // Ctrl + l
+				if (key === 66 || key === 73) e.preventDefault();
+				return false;
 			}
-			else
-			{
-				if (key === 48) this.shortcutsLoadFormat(e, 'p'); // ctrl + alt + 0
-				else if (key === 49) this.shortcutsLoadFormat(e, 'h1'); // ctrl + alt + 1
-				else if (key === 50) this.shortcutsLoadFormat(e, 'h2'); // ctrl + alt + 2
-				else if (key === 51) this.shortcutsLoadFormat(e, 'h3'); // ctrl + alt + 3
-				else if (key === 52) this.shortcutsLoadFormat(e, 'h4'); // ctrl + alt + 4
-				else if (key === 53) this.shortcutsLoadFormat(e, 'h5'); // ctrl + alt + 5
-				else if (key === 54) this.shortcutsLoadFormat(e, 'h6'); // ctrl + alt + 6
 
-			}
+			if (key === 77) this.shortcutsLoad(e, 'removeFormat'); // Ctrl + m
+			else if (key === 66) this.shortcutsLoad(e, 'bold'); // Ctrl + b
+			else if (key === 73) this.shortcutsLoad(e, 'italic'); // Ctrl + i
+
+			else if (key === 74) this.shortcutsLoad(e, 'insertunorderedlist'); // Ctrl + j
+			else if (key === 75) this.shortcutsLoad(e, 'insertorderedlist'); // Ctrl + k
+
+			else if (key === 72) this.shortcutsLoad(e, 'superscript'); // Ctrl + h
+			else if (key === 76) this.shortcutsLoad(e, 'subscript'); // Ctrl + l
 
 		},
 		shortcutsLoad: function(e, cmd)
@@ -2014,13 +2073,24 @@
 				var html = this.get();
 				if (savedHtml !== html)
 				{
+					var name = this.$source.attr('name');
 					$.ajax({
 						url: this.opts.autosave,
 						type: 'post',
-						data: this.$source.attr('name') + '=' + escape(encodeURIComponent(html)),
+						data: 'name=' + name + '&' + name + '=' + escape(encodeURIComponent(html)),
 						success: $.proxy(function(data)
 						{
-							this.callback('autosave', false, data);
+							var json = $.parseJSON(data);
+							if (typeof json.error == 'undefined')
+							{
+								// success
+								this.callback('autosave', false, json);
+							}
+							else
+							{
+								// error
+								this.callback('autosaveError', false, json);
+							}
 
 							savedHtml = html;
 
@@ -2133,10 +2203,21 @@
 		toolbarObserveScroll: function()
 		{
 			var scrollTop = $(this.opts.toolbarFixedTarget).scrollTop();
-			var boxTop = this.$box.offset().top;
-			var left = 0;
 
-			var end = boxTop + this.$box.height() + 40;
+			var boxTop = 0;
+			var left = 0;
+			var end = 0;
+
+			if (this.opts.toolbarFixedTarget === document)
+			{
+				boxTop = this.$box.offset().top;
+			}
+			else
+			{
+				boxTop = 1;
+			}
+
+			end = boxTop + this.$box.height() + 40;
 
 			if (scrollTop > boxTop)
 			{
@@ -2149,13 +2230,27 @@
 				}
 
 				this.toolbarFixed = true;
-				this.$toolbar.css({
-					position: 'fixed',
-					width: width,
-					zIndex: 1005,
-					top: this.opts.toolbarFixedTopOffset + 'px',
-					left: left
-				});
+
+				if (this.opts.toolbarFixedTarget === document)
+				{
+					this.$toolbar.css({
+						position: 'fixed',
+						width: width,
+						zIndex: 10005,
+						top: this.opts.toolbarFixedTopOffset + 'px',
+						left: left
+					});
+				}
+				else
+				{
+					this.$toolbar.css({
+						position: 'absolute',
+						width: width,
+						zIndex: 10005,
+						top: (this.opts.toolbarFixedTopOffset + scrollTop) + 'px',
+						left: 0
+					});
+				}
 
 				if (scrollTop < end) this.$toolbar.css('visibility', 'visible');
 				else this.$toolbar.css('visibility', 'hidden');
@@ -2334,6 +2429,7 @@
 			else
 			{
 				this.dropdownHideAll();
+				this.callback('dropdownShow', { dropdown: $dropdown, key: key, button: $button });
 
 				this.buttonActive(key);
 				$button.addClass('dropact');
@@ -2361,6 +2457,7 @@
 				else if (!this.opts.air) top = keyPosition.top + btnHeight + 'px';
 
 				$dropdown.css({ position: position, left: left, top: top }).show();
+				this.callback('dropdownShown', { dropdown: $dropdown, key: key, button: $button });
 			}
 
 
@@ -2380,6 +2477,7 @@
 		{
 			this.$toolbar.find('a.dropact').removeClass('redactor_act').removeClass('dropact');
 			$('.redactor_dropdown').hide();
+			this.callback('dropdownHide');
 		},
 		dropdownHide: function (e, $dropdown)
 		{
@@ -2515,7 +2613,10 @@
 		{
 			if (!this.opts.toolbar) return;
 			var btn = this.buttonBuild(key, { title: title, callback: callback, dropdown: dropdown }, true);
+
 			this.$toolbar.append($('<li>').append(btn));
+
+			return btn;
 		},
 		buttonAddFirst: function(key, title, callback, dropdown)
 		{
@@ -2531,6 +2632,8 @@
 
 			if ($btn.size() !== 0) $btn.parent().after($('<li>').append(btn));
 			else this.$toolbar.append($('<li>').append(btn));
+
+			return btn;
 		},
 		buttonAddBefore: function(beforekey, key, title, callback, dropdown)
 		{
@@ -2540,6 +2643,8 @@
 
 			if ($btn.size() !== 0) $btn.parent().before($('<li>').append(btn));
 			else this.$toolbar.append($('<li>').append(btn));
+
+			return btn;
 		},
 		buttonRemove: function (key)
 		{
@@ -2598,16 +2703,16 @@
 		// EXEC
 		execPasteFrag: function(html)
 		{
-			var sel = this.window.getSelection();
+			var sel = this.getSelection();
 			if (sel.getRangeAt && sel.rangeCount)
 			{
-				range = sel.getRangeAt(0);
+				var range = this.getRange();
 				range.deleteContents();
 
-				var el = document.createElement("div");
+				var el = this.document.createElement("div");
 				el.innerHTML = html;
 
-				var frag = document.createDocumentFragment(), node, lastNode;
+				var frag = this.document.createDocumentFragment(), node, lastNode;
 				while ((node = el.firstChild))
 				{
 					lastNode = frag.appendChild(node);
@@ -2628,7 +2733,10 @@
 		},
 		exec: function(cmd, param, sync)
 		{
-			if (cmd === 'formatblock' && this.browser('msie')) param = '<' + param + '>';
+			if (cmd === 'formatblock' && this.browser('msie'))
+			{
+				param = '<' + param + '>';
+			}
 
 			if (cmd === 'inserthtml' && this.browser('msie'))
 			{
@@ -2654,6 +2762,15 @@
 				this.$source.focus();
 				return false;
 			}
+
+			if (   cmd === 'bold'
+				|| cmd === 'italic'
+				|| cmd === 'underline'
+				|| cmd === 'strikethrough')
+			{
+				this.bufferSet();
+			}
+
 
 			if (cmd === 'superscript' || cmd === 'subscript')
 			{
@@ -3020,7 +3137,8 @@
 			if (!block && this.opts.linebreaks)
 			{
 				// one element
-				this.exec('formatBlock', 'blockquote');
+				this.exec('formatblock', 'div');
+
 				var newblock = this.getBlock();
 				var block = $('<div data-tagblock="">').html($(newblock).html());
 				$(newblock).replaceWith(block);
@@ -3201,6 +3319,11 @@
 
 			html = html + "\n";
 
+			if (this.opts.removeEmptyTags === false)
+			{
+				return html;
+			}
+
 			var safes = [];
 			var matches = html.match(/<(table|div|pre|object)(.*?)>([\w\W]*?)<\/(table|div|pre|object)>/gi);
 			if (!matches) matches = [];
@@ -3258,7 +3381,6 @@
 					else html += htmls[i];
 				}
 			}
-
 
 			html = R('<p><p>', 'gi', '<p>');
 			html = R('</p></p>', 'gi', '</p>');
@@ -3394,7 +3516,13 @@
 
 			// When we paste text in Safari is wrapping inserted div (remove it)
 			this.$editor.find('div[style="text-align: -webkit-auto;"]').contents().unwrap();
+
+			// Remove all styles in ul, ol, li
+			this.$editor.find('ul, ol, li').removeAttr('style');
 		},
+
+
+		// TEXTAREA CODE FORMATTING
 		cleanHtml: function(code)
 		{
 			var i = 0,
@@ -3659,9 +3787,9 @@
 		formatBlock: function(tag, block)
 		{
 			if (block === false) block = this.getBlock();
-			if (block === false)
+			if (block === false && this.opts.linebreaks === true)
 			{
-				if (this.opts.linebreaks === true) this.execCommand('formatblock', tag);
+				this.execCommand('formatblock', tag);
 				return true;
 			}
 
@@ -4156,7 +4284,6 @@
 
 			// Update value
 			$html = $('<div>').append($.parseHTML(html));
-
 			var currBlock = this.getBlock();
 
 			if ($html.contents().length == 1)
@@ -4166,9 +4293,14 @@
 				// If the inserted and received text tags match
 				if (htmlTagName != 'P' && htmlTagName == currBlock.tagName || htmlTagName == 'PRE')
 				{
-					html = $html.text();
+					//html = $html.html();
 					$html = $('<div>').append(html);
 				}
+			}
+
+			if (this.opts.linebreaks)
+			{
+				html = html.replace(/<p(.*?)>([\w\W]*?)<\/p>/gi, '$2<br>');
 			}
 
 			// add text in a paragraph
@@ -4358,7 +4490,13 @@
 				if (this.opts.linebreaks)
 				{
 					var contents = $('<div>').append($.trim(this.$editor.html())).contents();
-					if (this.outerHtml(contents.last()[0]) != this.outerHtml(element))
+					var last = contents.last()[0];
+					if (last.tagName == 'SPAN' && last.innerHTML == '')
+					{
+						last = contents.prev()[0];
+					}
+
+					if (this.outerHtml(last) != this.outerHtml(element))
 					{
 						return false;
 					}
@@ -4393,21 +4531,60 @@
 				this.$editor.find('span#selection-marker-1').removeAttr('id');
 			}
 		},
-		insertLineBreak: function()
+		insertLineBreak: function(twice)
 		{
 			this.selectionSave();
-			this.$editor.find('#selection-marker-1').before('<br>' + (this.browser('webkit') ? this.opts.invisibleSpace : ''));
-			this.selectionRestore();
+
+			var br = '<br>';
+			if (twice == true)
+			{
+				br = '<br><br>';
+			}
+
+			if (this.browser('mozilla'))
+			{
+				var span = $('<span>').html(this.opts.invisibleSpace);
+				this.$editor.find('#selection-marker-1').before(br).before(span).before(this.opts.invisibleSpace);
+
+				this.setCaretAfter(span[0]);
+				span.remove();
+
+				this.selectionRemoveMarkers();
+			}
+			else
+			{
+				var parent = this.getParent();
+				if (parent && parent.tagName === 'A')
+				{
+					var offset = this.getCaretOffset(parent);
+
+					var text = $.trim($(parent).text()).replace(/\n\r\n/g, '');
+					var len = text.length;
+
+					if (offset == len)
+					{
+						this.selectionRemoveMarkers();
+
+						var node = $('<span id="selection-marker-1">' + this.opts.invisibleSpace + '</span>', this.document)[0];
+						$(parent).after(node);
+						$(node).before(br + (this.browser('webkit') ? this.opts.invisibleSpace : ''));
+						this.selectionRestore();
+
+						return true;
+					}
+
+				}
+
+				this.$editor.find('#selection-marker-1').before(br + (this.browser('webkit') ? this.opts.invisibleSpace : ''));
+				this.selectionRestore();
+			}
 		},
 		insertDoubleLineBreak: function()
 		{
-			this.selectionSave();
-			this.$editor.find('#selection-marker-1').before('<br><br>' + (this.browser('webkit') ? this.opts.invisibleSpace : ''));
-			this.selectionRestore();
+			this.insertLineBreak(true);
 		},
 		replaceLineBreak: function(element)
 		{
-			//var node = this.document.createTextNode('\uFEFF');
 			var node = $('<br>' + this.opts.invisibleSpace);
 			$(element).replaceWith(node);
 			this.selectionStart(node);
@@ -4484,8 +4661,11 @@
 			html = html.replace(/<!--[\s\S]*?-->|<\?(?:php)?[\s\S]*?\?>/gi, '');
 
 			// remove nbsp
-			html = html.replace(/(&nbsp;){2,}/gi, '&nbsp;');
-			html = html.replace(/&nbsp;/gi, ' ');
+			if (this.opts.cleanSpaces === true)
+			{
+				html = html.replace(/(&nbsp;){2,}/gi, '&nbsp;');
+				html = html.replace(/&nbsp;/gi, ' ');
+			}
 
 			// remove google docs marker
 			html = html.replace(/<b\sid="internal-source-marker(.*?)">([\w\W]*?)<\/b>/gi, "$2");
@@ -4516,7 +4696,24 @@
 			html = html.replace(/<(\w+)([\w\W]*?)>/gi, '<$1>');
 
 			// remove empty
-			html = html.replace(/<[^\/>][^>]*>(\s*|\t*|\n*|&nbsp;|<br>)<\/[^>]+>/gi, '');
+			if (this.opts.linebreaks)
+			{
+				// prevent double linebreaks when an empty line in RTF has bold or underlined formatting associated with it
+				html = html.replace(/<strong><\/strong>/gi, '');
+				html = html.replace(/<u><\/u>/gi, '');
+
+				if (this.opts.cleanFontTag)
+				{
+					html = html.replace(/<font(.*?)>([\w\W]*?)<\/font>/gi, '$2');
+				}
+
+				html = html.replace(/<[^\/>][^>]*>(\s*|\t*|\n*|&nbsp;|<br>)<\/[^>]+>/gi, '<br>');
+			}
+			else
+			{
+				html = html.replace(/<[^\/>][^>]*>(\s*|\t*|\n*|&nbsp;|<br>)<\/[^>]+>/gi, '');
+			}
+
 			html = html.replace(/<div>\s*?\t*?\n*?(<ul>|<ol>|<p>)/gi, '$1');
 
 			// revert
@@ -4544,7 +4741,6 @@
 			{
 				html = html.replace(/<div><\/div>/gi, '<br />');
 			}
-
 
 			if (this.currentOrParentIs('LI'))
 			{
@@ -4621,9 +4817,12 @@
 			html = html.replace(/<p>•([\w\W]*?)<\/p>/gi, '<li>$1</li>');
 
 			// ie inserts a blank font tags when pasting
-			while (/<font>([\w\W]*?)<\/font>/gi.test(html))
+			if (this.browser('msie'))
 			{
-				html = html.replace(/<font>([\w\W]*?)<\/font>/gi, '$1');
+				while (/<font>([\w\W]*?)<\/font>/gi.test(html))
+				{
+					html = html.replace(/<font>([\w\W]*?)<\/font>/gi, '$1');
+				}
 			}
 
 			// remove table paragraphs
@@ -4688,7 +4887,7 @@
 
 			if (this.opts.autoresize && this.fullscreen !== true)
 			{
-				this.document.documentElement.scrollTop = this.saveScroll;
+				$(this.document.body).scrollTop(this.saveScroll);
 			}
 			else
 			{
@@ -4796,6 +4995,7 @@
 				{
 					this.selectionSave();
 				}
+
 				this.opts.buffer.push(this.$editor.html());
 				this.selectionRemoveMarkers('buffer');
 			}
@@ -4885,7 +5085,12 @@
 			var tooltip = $('<span class="redactor-link-tooltip"></span>');
 
 			var href = $link.attr('href');
-			if (href.length > 24) href = href.substring(0,24) + '...';
+			if (href === undefined)
+			{
+				href = '';
+			}
+
+			if (href.length > 24) href = href.substring(0, 24) + '...';
 
 			var aLink = $('<a href="' + $link.attr('href') + '" target="_blank">' + href + '</a>').on('click', $.proxy(function(e)
 			{
@@ -5092,6 +5297,33 @@
 			sel.removeAllRanges();
 			sel.addRange( range );
 		},
+		setCaretAfter: function(node)
+		{
+			this.$editor.focus();
+
+			node = node[0] || node;
+
+			var range = this.document.createRange()
+
+			var start = 1;
+			var end = -1;
+
+			range.setStart(node, start)
+			range.setEnd(node, end + 2)
+
+
+			var selection = this.window.getSelection()
+			var cursorRange = this.document.createRange()
+
+			var emptyElement = this.document.createTextNode('\u200B')
+			$(node).after(emptyElement)
+
+			cursorRange.setStartAfter(emptyElement)
+
+			selection.removeAllRanges()
+			selection.addRange(cursorRange)
+			$(emptyElement).remove();
+		},
 		getTextNodesIn: function (node)
 		{
 			var textNodes = [];
@@ -5115,7 +5347,11 @@
 			var el = false;
 			var sel = this.getSelection();
 
-			if (sel && sel.rangeCount > 0) el = sel.getRangeAt(0).startContainer;
+			if (sel && sel.rangeCount > 0)
+			{
+				el = sel.getRangeAt(0).startContainer;
+				//el = sel.getRangeAt(0).commonAncestorContainer;
+			}
 
 			return this.isParentRedactor(el);
 		},
@@ -5443,7 +5679,7 @@
 		},
 		tableInsert: function()
 		{
-			this.bufferSet();
+			this.bufferSet(false, false);
 
 			var rows = $('#redactor_table_rows').val(),
 				columns = $('#redactor_table_columns').val(),
@@ -5710,6 +5946,7 @@
 			this.modalClose();
 		},
 
+
 		// LINK
 		linkShow: function()
 		{
@@ -5739,50 +5976,27 @@
 				}
 				else text = sel.toString();
 
-				$('.redactor_link_text').val(text);
+				$('#redactor_link_url_text').val(text);
 
 				var thref = self.location.href.replace(/\/$/i, '');
-				var turl = url.replace(thref, '');
+				url = url.replace(thref, '');
+				url = url.replace(/^\/#/, '#');
+				url = url.replace('mailto:', '');
 
 				// remove host from href
 				if (this.opts.linkProtocol === false)
 				{
 					var re = new RegExp('^(http|ftp|https)://' + self.location.host, 'i');
-					turl = turl.replace(re, '');
+					url = url.replace(re, '');
 				}
 
-				var tabs = $('#redactor_tabs').find('a');
+				// set url
+				$('#redactor_link_url').val(url);
 
-				if (this.opts.linkEmail === false) tabs.eq(1).remove();
-				if (this.opts.linkAnchor === false) tabs.eq(2).remove();
-				if (this.opts.linkEmail === false && this.opts.linkAnchor === false)
+				if (target === '_blank')
 				{
-					$('#redactor_tabs').remove();
-					$('#redactor_link_url').val(turl);
+					$('#redactor_link_blank').prop('checked', true);
 				}
-				else
-				{
-					if (url.search('mailto:') === 0)
-					{
-						this.modalSetTab.call(this, 2);
-
-						$('#redactor_tab_selected').val(2);
-						$('#redactor_link_mailto').val(url.replace('mailto:', ''));
-					}
-					else if (turl.search(/^#/gi) === 0)
-					{
-						this.modalSetTab.call(this, 3);
-
-						$('#redactor_tab_selected').val(3);
-						$('#redactor_link_anchor').val(turl.replace(/^#/gi, '' ));
-					}
-					else
-					{
-						$('#redactor_link_url').val(turl);
-					}
-				}
-
-				if (target === '_blank') $('#redactor_link_blank').prop('checked', true);
 
 				this.linkInsertPressed = false;
 				$('#redactor_insert_link_btn').click($.proxy(this.linkProcess, this));
@@ -5806,16 +6020,19 @@
 			}
 
 			this.linkInsertPressed = true;
+			var target = '', targetBlank = '';
 
-			var tab_selected = $('#redactor_tab_selected').val();
-			var link = '', text = '', target = '', targetBlank = '';
+			var link = $('#redactor_link_url').val();
+			var text = $('#redactor_link_url_text').val();
 
-			// url
-			if (tab_selected === '1')
+			// mailto
+			if (link.search('@') != -1)
 			{
-				link = $('#redactor_link_url').val();
-				text = $('#redactor_link_url_text').val();
-
+				link = 'mailto:' + link;
+			}
+			// url, not anchor
+			else if (link.search('#') != 0)
+			{
 				if ($('#redactor_link_blank').prop('checked'))
 				{
 					target = ' target="_blank"';
@@ -5832,21 +6049,15 @@
 					link = this.opts.linkProtocol + link;
 				}
 			}
-			// mailto
-			else if (tab_selected === '2')
-			{
-				link = 'mailto:' + $('#redactor_link_mailto').val();
-				text = $('#redactor_link_mailto_text').val();
-			}
-			// anchor
-			else if (tab_selected === '3')
-			{
-				link = '#' + $('#redactor_link_anchor').val();
-				text = $('#redactor_link_anchor_text').val();
-			}
 
 			text = text.replace(/<|>/g, '');
-			this.linkInsert('<a href="' + link + '"' + target + '>' + text + '</a>', $.trim(text), link, targetBlank);
+			var extra = '&nbsp;';
+			if (this.browser('mozilla'))
+			{
+				extra = '&nbsp;';
+			}
+
+			this.linkInsert('<a href="' + link + '"' + target + '>' + text + '</a>' + extra, $.trim(text), link, targetBlank);
 
 		},
 		linkInsert: function (a, text, link, target)
@@ -5861,28 +6072,35 @@
 
 					$(this.insert_link_node).text(text).attr('href', link);
 
-					if (target !== '') $(this.insert_link_node).attr('target', target);
-					else $(this.insert_link_node).removeAttr('target');
-
-					this.sync();
+					if (target !== '')
+					{
+						$(this.insert_link_node).attr('target', target);
+					}
+					else
+					{
+						$(this.insert_link_node).removeAttr('target');
+					}
 				}
 				else
 				{
 					var $a = $(a).addClass('redactor-added-link');
 					this.exec('inserthtml', this.outerHtml($a), false);
 
-					this.$editor.find('a.redactor-added-link').removeAttr('style').removeClass('redactor-added-link').each(function()
+					var link = this.$editor.find('a.redactor-added-link');
+
+					link.removeAttr('style').removeClass('redactor-added-link').each(function()
 					{
 						if (this.className == '') $(this).removeAttr('class');
 					});
-					this.sync();
+
 				}
+
+				this.sync();
 			}
 
 			// link tooltip
 			setTimeout($.proxy(function()
 			{
-
 				if (this.opts.observeLinks) this.observeLinks();
 
 			}, this), 5);
@@ -6587,7 +6805,7 @@
 			$.extend( this.opts,
 			{
 				modal_file: String()
-				+ '<section>'
+				+ '<section id="redactor-modal-file-insert">'
 					+ '<div id="redactor-progress" class="redactor-progress-inline" style="display: none;"><span></span></div>'
 					+ '<form id="redactorUploadFileForm" method="post" action="" enctype="multipart/form-data">'
 						+ '<label>' + this.opts.curLang.filename + '</label>'
@@ -6599,11 +6817,11 @@
 				+ '</section>',
 
 				modal_image_edit: String()
-				+ '<section>'
+				+ '<section id="redactor-modal-image-edit">'
 					+ '<label>' + this.opts.curLang.title + '</label>'
-					+ '<input id="redactor_file_alt" class="redactor_input" />'
+					+ '<input type="text" id="redactor_file_alt" class="redactor_input" />'
 					+ '<label>' + this.opts.curLang.link + '</label>'
-					+ '<input id="redactor_file_link" class="redactor_input" />'
+					+ '<input type="text" id="redactor_file_link" class="redactor_input" />'
 					+ '<label><input type="checkbox" id="redactor_link_blank"> ' + this.opts.curLang.link_new_tab + '</label>'
 					+ '<label>' + this.opts.curLang.image_position + '</label>'
 					+ '<select id="redactor_form_image_align">'
@@ -6614,13 +6832,13 @@
 					+ '</select>'
 				+ '</section>'
 				+ '<footer>'
-					+ '<div style="width: 33%;"><button class="redactor_modal_delete_btn" id="redactor_image_delete_btn">' + this.opts.curLang._delete + '</button></div>'
-					+ '<div style="width: 33%;"><button class="redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button></div>'
-					+ '<div style="width: 34%;"><button class="redactor_modal_action_btn" id="redactorSaveBtn">' + this.opts.curLang.save + '</button></div>'
+					+ '<button id="redactor_image_delete_btn" class="redactor_modal_btn redactor_modal_delete_btn">' + this.opts.curLang._delete + '</button>'
+					+ '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
+					+ '<button id="redactorSaveBtn" class="redactor_modal_btn redactor_modal_action_btn">' + this.opts.curLang.save + '</button>'
 				+ '</footer>',
 
 				modal_image: String()
-				+ '<section>'
+				+ '<section id="redactor-modal-image-insert">'
 					+ '<div id="redactor_tabs">'
 						+ '<a href="#" id="redactor-tab-control-1" class="redactor_tabs_act">' + this.opts.curLang.upload + '</a>'
 						+ '<a href="#" id="redactor-tab-control-2">' + this.opts.curLang.choose + '</a>'
@@ -6641,67 +6859,45 @@
 					+ '</div>'
 				+ '</section>'
 				+ '<footer>'
-					+ '<div style="width: 50%;"><button class="redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button></div>'
-					+ '<div style="width: 50%;"><button class="redactor_modal_action_btn" id="redactor_upload_btn">' + this.opts.curLang.insert + '</button></div>'
+					+ '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
+					+ '<button class="redactor_modal_btn redactor_modal_action_btn" id="redactor_upload_btn">' + this.opts.curLang.insert + '</button>'
 				+ '</footer>',
 
 				modal_link: String()
-				+ '<section>'
-					+ '<form id="redactorInsertLinkForm" method="post" action="">'
-						+ '<div id="redactor_tabs">'
-							+ '<a href="#" class="redactor_tabs_act">URL</a>'
-							+ '<a href="#">Email</a>'
-							+ '<a href="#">' + this.opts.curLang.anchor + '</a>'
-						+ '</div>'
-						+ '<input type="hidden" id="redactor_tab_selected" value="1" />'
-						+ '<div class="redactor_tab" id="redactor_tab1">'
-							+ '<label>URL</label>'
-							+ '<input type="text" id="redactor_link_url" class="redactor_input"  />'
-							+ '<label>' + this.opts.curLang.text + '</label>'
-							+ '<input type="text" class="redactor_input redactor_link_text" id="redactor_link_url_text" />'
-							+ '<label><input type="checkbox" id="redactor_link_blank"> ' + this.opts.curLang.link_new_tab + '</label>'
-						+ '</div>'
-						+ '<div class="redactor_tab" id="redactor_tab2" style="display: none;">'
-							+ '<label>Email</label>'
-							+ '<input type="text" id="redactor_link_mailto" class="redactor_input" />'
-							+ '<label>' + this.opts.curLang.text + '</label>'
-							+ '<input type="text" class="redactor_input redactor_link_text" id="redactor_link_mailto_text" />'
-						+ '</div>'
-						+ '<div class="redactor_tab" id="redactor_tab3" style="display: none;">'
-							+ '<label>' + this.opts.curLang.anchor + '</label>'
-							+ '<input type="text" class="redactor_input" id="redactor_link_anchor"  />'
-							+ '<label>' + this.opts.curLang.text + '</label>'
-							+ '<input type="text" class="redactor_input redactor_link_text" id="redactor_link_anchor_text" />'
-						+ '</div>'
-					+ '</form>'
+				+ '<section id="redactor-modal-link-insert">'
+					+ '<label>URL</label>'
+					+ '<input type="text" class="redactor_input" id="redactor_link_url" />'
+					+ '<label>' + this.opts.curLang.text + '</label>'
+					+ '<input type="text" class="redactor_input" id="redactor_link_url_text" />'
+					+ '<label><input type="checkbox" id="redactor_link_blank"> ' + this.opts.curLang.link_new_tab + '</label>'
 				+ '</section>'
 				+ '<footer>'
-					+ '<div style="width: 50%;"><button class="redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button></div>'
-					+ '<div style="width: 50%;"><button class="redactor_modal_action_btn" id="redactor_insert_link_btn">' + this.opts.curLang.insert + '</button></div>'
+					+ '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
+					+ '<button id="redactor_insert_link_btn" class="redactor_modal_btn redactor_modal_action_btn">' + this.opts.curLang.insert + '</button>'
 				+ '</footer>',
 
 				modal_table: String()
-				+ '<section>'
+				+ '<section id="redactor-modal-table-insert">'
 					+ '<label>' + this.opts.curLang.rows + '</label>'
 					+ '<input type="text" size="5" value="2" id="redactor_table_rows" />'
 					+ '<label>' + this.opts.curLang.columns + '</label>'
 					+ '<input type="text" size="5" value="3" id="redactor_table_columns" />'
 				+ '</section>'
 				+ '<footer>'
-					+ '<div style="width: 50%;"><button class="redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button></div>'
-					+ '<div style="width: 50%;"><button class="redactor_modal_action_btn" id="redactor_insert_table_btn">' + this.opts.curLang.insert + '</button></div>'
+					+ '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
+					+ '<button id="redactor_insert_table_btn" class="redactor_modal_btn redactor_modal_action_btn">' + this.opts.curLang.insert + '</button>'
 				+ '</footer>',
 
 				modal_video: String()
-				+ '<section>'
+				+ '<section id="redactor-modal-video-insert">'
 					+ '<form id="redactorInsertVideoForm">'
 						+ '<label>' + this.opts.curLang.video_html_code + '</label>'
 						+ '<textarea id="redactor_insert_video_area" style="width: 99%; height: 160px;"></textarea>'
 					+ '</form>'
 				+ '</section>'
 				+ '<footer>'
-					+ '<div style="width: 50%;"><button class="redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button></div>'
-					+ '<div style="width: 50%;"><button class="redactor_modal_action_btn" id="redactor_insert_video_btn">' + this.opts.curLang.insert + '</button></div>'
+					+ '<button class="redactor_modal_btn redactor_btn_modal_close">' + this.opts.curLang.cancel + '</button>'
+					+ '<button id="redactor_insert_video_btn" class="redactor_modal_btn redactor_modal_action_btn">' + this.opts.curLang.insert + '</button>'
 				+ '</footer>'
 
 			});
@@ -6798,6 +6994,13 @@
 
 			$redactorModal.find('.redactor_btn_modal_close').on('click', $.proxy(this.modalClose, this));
 
+			var buttons = $redactorModal.find('footer button');
+			var buttonsSize = buttons.size();
+			if (buttonsSize > 0)
+			{
+				$(buttons).css('width', (width/buttonsSize) + 'px')
+			}
+
 			// save scroll
 			if (this.opts.autoresize === true)
 			{
@@ -6815,7 +7018,7 @@
 					top: '-2000px',
 					left: '50%',
 					width: width + 'px',
-					marginLeft: '-' + (width + 60) / 2 + 'px'
+					marginLeft: '-' + (width / 2) + 'px'
 				}).show();
 
 				this.modalSaveBodyOveflow = $(document.body).css('overflow');
@@ -6835,8 +7038,18 @@
 				}).show();
 			}
 
-			// callback
-			if (typeof callback === 'function') callback();
+			// modal actions callback
+			if (typeof callback === 'function')
+			{
+				callback();
+			}
+
+			// modal shown callback
+			setTimeout($.proxy(function()
+			{
+				this.callback('modalOpened');
+
+			}, this), 11);
 
 			// fix bootstrap modal focus
 			$(document).off('focusin.modal');
@@ -6855,10 +7068,19 @@
 				}, 10);
 			}
 
+			$redactorModal.find('input[type=text]').keypress(function(e)
+			{
+				if (e.which === 13 )
+				{
+					$redactorModal.find('.redactor_modal_action_btn').click();
+					e.preventDefault();
+				}
+			});
+
 		},
 		modalClose: function()
 		{
-			$('#redactor_modal_close').off('click', this.modalClose );
+			$('#redactor_modal_close').off('click', this.modalClose);
 			$('#redactor_modal').fadeOut('fast', $.proxy(function()
 			{
 				var redactorModalInner = $('#redactor_modal_inner');
@@ -6890,6 +7112,8 @@
 				{
 					this.$editor.scrollTop(this.saveModalScroll);
 				}
+
+				this.callback('modalClosed');
 
 			}, this));
 
@@ -7273,6 +7497,9 @@
 				});
 			}
 
+			// drop callback
+			this.callback('drop', e);
+
 			var fd = new FormData();
 
 			// append file data
@@ -7385,6 +7612,12 @@
 		outerHtml: function(el)
 		{
 			return $('<div>').append($(el).eq(0).clone()).html();
+		},
+		stripHtml: function(html)
+		{
+			var tmp = document.createElement("DIV");
+			tmp.innerHTML = html;
+			return tmp.textContent || tmp.innerText || "";
 		},
 		isString: function(obj)
 		{
@@ -7512,8 +7745,8 @@
 	// LINKIFY
 	$.Redactor.fn.formatLinkify = function(protocol, convertLinks, convertImageLinks, convertVideoLinks, linkSize)
 	{
-		var url1 = /(^|&lt;|\s)(www\..+?\..+?)(\s|&gt;|$)/g,
-			url2 = /(^|&lt;|\s)(((https?|ftp):\/\/|mailto:).+?)(\s|&gt;|$)/g,
+		var url1 = /(^|&lt;|\s)(www\..+?\..+?)([.),]?)(\s|\.\s+|\)|&gt;|$)/,
+			url2 = /(^|&lt;|\s)(((https?|ftp):\/\/|mailto:).+?)([.),]?)(\s|\.\s+|\)|&gt;|$)/,
 			urlImage = /(https?:\/\/.*\.(?:png|jpg|jpeg|gif))/gi,
 			urlYoutube = /https?:\/\/(?:[0-9A-Z-]+\.)?(?:youtu\.be\/|youtube\.com\S*[^\w\-\s])([\w\-]{11})(?=[^\w\-]|$)(?![?=&+%\w.-]*(?:['"][^<>]*>|<\/a>))[?=&+%\w.-]*/ig,
 			urlVimeo = /https?:\/\/(www\.)?vimeo.com\/(\d+)($|\/)/;
@@ -7555,16 +7788,73 @@
 				// link
 				if (convertLinks && html && (html.match(url1) || html.match(url2)))
 				{
-					var href = (html.match(url1) || html.match(url2));
-					href = href[0];
-					if (href.length > linkSize) href = href.substring(0, linkSize) + '...';
+					var found = true;
+					var first = true;
 
-					html = html.replace(/&/g, '&amp;')
-					.replace(/</g, '&lt;')
-					.replace(/>/g, '&gt;')
-					.replace(url1, '$1<a href="' + protocol + '$2">' + $.trim(href) + '</a>$3')
-					.replace(url2, '$1<a href="$2">' + $.trim(href) + '</a>$5');
+					while (found)
+					{
+						var href;
+						var url = url1;
+						var href1 = url1.exec(html);
+						var href2 = url2.exec(html);
 
+						if (href1 && href1[2] && href2 && href2[2])
+						{
+							//process whichever came first sequentially *first*
+							var index1 = html.indexOf(href1[2]);
+							var index2 = html.indexOf(href2[2]);
+							if (index1 < index2)
+							{
+								href = href1;
+								url = url1;
+							}
+							else
+							{
+								href = href2;
+								url = url2
+							}
+						}
+						else if (href1 && href1[2])
+						{
+							href = href1;
+							url = url1
+						}
+						else if (href2 && href2[2])
+						{
+							href = href2;
+							url = url2
+						}
+
+						found = (href && href.length);
+						if (found)
+						{
+							href = href[2];
+						}
+
+						if (found && href && href.length > linkSize)
+						{
+							href = href.substring(0, linkSize) + '...';
+						}
+
+						if (first)
+						{
+							html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+						}
+
+						if (found && href)
+						{
+							if (url == url1)
+							{
+								html = html.replace(url1, '$1<a href="' + protocol + '$2">' + $.trim(href) + '</a>$3$4')
+							}
+							else
+							{
+								html = html.replace(url2, '$1<a href="$2">' + $.trim(href) + '</a>$5$6');
+							}
+						}
+
+						first = false;
+					}
 
 					$(n).after(html).remove();
 				}

@@ -37,6 +37,7 @@
   display: block;
   margin: 0;
   padding: 0;
+  border: 1px solid #eee;
 }
 .redactor_box textarea {
   position: relative;
@@ -73,7 +74,7 @@ body .redactor_box_fullscreen {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000000;
+  z-index: 49000;
   overflow: hidden;
   width: 100%;
 }
@@ -82,7 +83,7 @@ body .redactor_box_fullscreen {
 */
 .redactor-link-tooltip {
   position: absolute;
-  z-index: 3000;
+  z-index: 49999;
   padding: 10px;
   line-height: 1;
   display: inline-block;
@@ -364,6 +365,9 @@ body .redactor_air .redactor_toolbar {
   background-color: #1f78d8;
   color: #fff;
 }
+.redactor_toolbar li a:hover i:before {
+  color: #fff;
+}
 .redactor_toolbar li a:active,
 .redactor_toolbar li a.redactor_act {
   outline: none;
@@ -416,6 +420,10 @@ body .redactor_air .redactor_toolbar {
   line-height: 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+.re-icon i:before {
+  position: relative;
+  font-size: 14px;
 }
 .re-video:before {
   content: "\e600";
