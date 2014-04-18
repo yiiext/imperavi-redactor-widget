@@ -65,7 +65,7 @@
 */
 body .redactor_air {
   position: absolute;
-  z-index: 102;
+  z-index: 502;
 }
 /*
 	FULLSCREEN
@@ -927,42 +927,42 @@ body .redactor_air .redactor_toolbar {
   left: 0;
   width: 100%;
   z-index: 1000000;
-}
-#redactor-progress.redactor-progress-inline {
-  position: static;
-  margin-bottom: 4px;
-}
-#redactor-progress > span {
-  display: block;
   height: 10px;
+}
+#redactor-progress span {
+  display: block;
   width: 100%;
-  background-color: #0a8bfb;
-  box-shadow: 0 1px 2px rgba(255, 255, 255, 0.9) inset;
-  -webkit-background-size: 30px 30px;
-  -moz-background-size: 30px 30px;
-  background-size: 30px 30px;
-  background-image: -webkit-gradient(linear, left top, right bottom, color-stop(0.25, rgba(255, 255, 255, 0.9)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.9)), color-stop(0.75, rgba(255, 255, 255, 0.9)), color-stop(0.75, transparent), to(transparent));
-  background-image: -webkit-linear-gradient(135deg, rgba(255, 255, 255, 0.9) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0.9) 75%, transparent 75%, transparent);
-  background-image: -moz-linear-gradient(135deg, rgba(255, 255, 255, 0.9) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0.9) 75%, transparent 75%, transparent);
-  background-image: -ms-linear-gradient(135deg, rgba(255, 255, 255, 0.9) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0.9) 75%, transparent 75%, transparent);
-  background-image: -o-linear-gradient(135deg, rgba(255, 255, 255, 0.9) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0.9) 75%, transparent 75%, transparent);
-  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 255, 255, 0.9) 75%, transparent 75%, transparent);
-  -webkit-animation: animate-stripes 2s linear infinite;
-  animation: animate-stripes 2s linear infinite;
+  height: 100%;
+  background-color: #3d58a8;
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent);
+  background-image: -o-linear-gradient(45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent);
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.2) 75%, transparent 75%, transparent);
+  -webkit-animation: progress-bar-stripes 2s linear infinite;
+  -o-animation: progress-bar-stripes 2s linear infinite;
+  animation: progress-bar-stripes 2s linear infinite;
+  background-size: 40px 40px;
 }
-@-webkit-keyframes animate-stripes {
-  0% {
+@-webkit-keyframes progress-bar-stripes {
+  from {
+    background-position: 40px 0;
+  }
+  to {
     background-position: 0 0;
   }
-  100% {
-    background-position: 60px 0;
-  }
 }
-@keyframes animate-stripes {
-  0% {
+@-o-keyframes progress-bar-stripes {
+  from {
+    background-position: 40px 0;
+  }
+  to {
     background-position: 0 0;
   }
-  100% {
-    background-position: 60px 0;
+}
+@keyframes progress-bar-stripes {
+  from {
+    background-position: 40px 0;
+  }
+  to {
+    background-position: 0 0;
   }
 }
