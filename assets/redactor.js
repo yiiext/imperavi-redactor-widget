@@ -1,6 +1,6 @@
 /*
-	Redactor v9.2.4
-	Updated: May 15, 2014
+	Redactor v9.2.5
+	Updated: Jun 5, 2014
 
 	http://imperavi.com/redactor/
 
@@ -73,7 +73,7 @@
 	}
 
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '9.2.4';
+	$.Redactor.VERSION = '9.2.5';
 	$.Redactor.opts = {
 
 			// settings
@@ -116,10 +116,7 @@
 				'ctrl+shift+7': "this.execCommand('insertorderedlist', false)",
 				'ctrl+shift+8': "this.execCommand('insertunorderedlist', false)"
 			},
-			shortcutsAdd: {
-				'ctrl+3': "this.execCommand('removeFormat', false)"
-
-			},
+			shortcutsAdd: false,
 
 			autosave: false, // false or url
 			autosaveInterval: 60, // seconds
@@ -1011,11 +1008,17 @@
 
 			// remove spans
 			html = html.replace(/<span(.*?)>([\w\W]*?)<\/span>/gi, '$2');
+			html = html.replace(/<inline>([\w\W]*?)<\/inline>/gi, '$1');
 			html = html.replace(/<inline>/gi, '<span>');
 			html = html.replace(/<inline /gi, '<span ');
 			html = html.replace(/<\/inline>/gi, '</span>');
-			html = html.replace(/<span(.*?)class="redactor_placeholder"(.*?)>([\w\W]*?)<\/span>/gi, '');
 
+			if (this.opts.removeEmptyTags)
+			{
+				html = html.replace(/<span>([\w\W]*?)<\/span>/gi, '$1');
+			}
+
+			html = html.replace(/<span(.*?)class="redactor_placeholder"(.*?)>([\w\W]*?)<\/span>/gi, '');
 			html = html.replace(/<img(.*?)contenteditable="false"(.*?)>/gi, '<img$1$2>');
 
 			// special characters
@@ -2192,7 +2195,7 @@
 		},
 		toggleVisual: function()
 		{
-			var html = this.$source.hide().val();;
+			var html = this.$source.hide().val();
 			if (typeof this.modified !== 'undefined')
 			{
 				var modified = this.modified.replace(/\n/g, '');
@@ -4408,7 +4411,25 @@
 			}
 			else
 			{
-				this.document.execCommand('fontSize', false, 4 );
+				var cmd, arg = value;
+				switch (attr)
+				{
+					case 'font-size':
+						cmd = 'fontSize';
+						arg = 4;
+					break;
+					case 'font-family':
+						cmd = 'fontName';
+					break;
+					case 'color':
+						cmd = 'foreColor';
+					break;
+					case 'background-color':
+						cmd = 'backColor';
+					break;
+				}
+
+				this.document.execCommand(cmd, false, arg);
 
 				var fonts = this.$editor.find('font');
 				$.each(fonts, $.proxy(function(i, s)
@@ -5949,6 +5970,7 @@
 
 				if (node1.length != 0 && node2.length != 0)
 				{
+
 					this.selectionSet(node1[0], 0, node2[0], 0);
 				}
 				else if (node1.length != 0)
@@ -7210,12 +7232,11 @@
 		showProgressBar: function()
 		{
 			this.buildProgressBar();
-			this.$progressBar.fadeIn();
+			$('#redactor-progress').fadeIn();
 		},
 		hideProgressBar: function()
 		{
-			this.buildProgressBar();
-			this.$progressBar.fadeOut(1500);
+			$('#redactor-progress').fadeOut(1500);
 		},
 
 		// MODAL
