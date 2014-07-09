@@ -65,11 +65,11 @@ $.Redactor.opts.langs['zh_tw'] = {
 	fullscreen: '全銀幕',
 	deleted: '刪除線',
 	anchor: '錨點',
-	link_new_tab: 'Open link in new tab',
-	underline: 'Underline',
-	alignment: 'Alignment',
-	filename: 'Name (optional)',
-	edit: 'Edit',
-	center: 'Center'
+	link_new_tab: '另開新視窗',
+	underline: '底線',
+	alignment: '對齊',
+	filename: '名稱（非必要）',
+	edit: '編輯',
+	center: '置中'
 };
 })( jQuery );
