@@ -2621,8 +2621,15 @@
 				else
 				{
 					$item = $('<a href="#" class="' + btnObject.className + ' redactor_dropdown_' + btnName + '">' + btnObject.title + '</a>');
-					$item.on('click', $.proxy(function(e)
+
+					$item.on('mousedown', $.proxy(function(e) {
+						if (this.opts.air) this.selectionSave();
+					}, this));
+
+					$item.on('mouseup', $.proxy(function(e)
 					{
+						if (this.opts.air) this.selectionRestore();
+
 						if (e.preventDefault) e.preventDefault();
 						if (this.browser('msie')) e.returnValue = false;
 
@@ -2910,7 +2917,7 @@
 				var align = $parent.css('text-align');
 				if (align == '')
 				{
-					align = 'left';
+					align = this.opts.direction == 'ltr' ? 'left' : 'right';
 				}
 
 				this.buttonActive('align' + align);
@@ -3201,6 +3208,8 @@
 		{
 			this.bufferSet();
 
+			var marginPosition = this.opts.direction == 'ltr' ? 'margin-left' : 'margin-right';
+
 			if (cmd === 'indent')
 			{
 				var block = this.getBlock();
@@ -3242,8 +3251,8 @@
 					var block = $('<div data-tagblock="">').html($(newblock).html());
 					$(newblock).replaceWith(block);
 
-					var left = this.normalize($(block).css('margin-left')) + this.opts.indentValue;
-					$(block).css('margin-left', left + 'px');
+					var left = this.normalize($(block).css(marginPosition)) + this.opts.indentValue;
+					$(block).css(marginPosition, left + 'px');
 				}
 				else
 				{
@@ -3264,8 +3273,8 @@
 							$el = $(elem).closest(this.opts.alignmentTags.toString().toLowerCase(), this.$editor[0]);
 						}
 
-						var left = this.normalize($el.css('margin-left')) + this.opts.indentValue;
-						$el.css('margin-left', left + 'px');
+						var left = this.normalize($el.css(marginPosition)) + this.opts.indentValue;
+						$el.css(marginPosition, left + 'px');
 
 					}, this));
 				}
@@ -3304,7 +3313,7 @@
 							$el = $(elem).closest(this.opts.alignmentTags.toString().toLowerCase(), this.$editor[0]);
 						}
 
-						var left = this.normalize($el.css('margin-left')) - this.opts.indentValue;
+						var left = this.normalize($el.css(marginPosition)) - this.opts.indentValue;
 						if (left <= 0)
 						{
 							// linebreaks
@@ -3315,13 +3324,13 @@
 							// all block tags
 							else
 							{
-								$el.css('margin-left', '');
+								$el.css(marginPosition, '');
 								this.removeEmptyAttr($el, 'style');
 							}
 						}
 						else
 						{
-							$el.css('margin-left', left + 'px');
+							$el.css(marginPosition, left + 'px');
 						}
 
 					}, this));
@@ -3363,11 +3372,11 @@
 		// ALIGNMENT
 		alignmentLeft: function()
 		{
-			this.alignmentSet('', 'JustifyLeft');
+			this.alignmentSet(this.opts.direction == 'ltr' ? '' : 'left', 'JustifyLeft');
 		},
 		alignmentRight: function()
 		{
-			this.alignmentSet('right', 'JustifyRight');
+			this.alignmentSet(this.opts.direction == 'ltr' ? 'right' : '', 'JustifyRight');
 		},
 		alignmentCenter: function()
 		{
