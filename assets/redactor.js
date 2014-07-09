@@ -2621,8 +2621,15 @@
 				else
 				{
 					$item = $('<a href="#" class="' + btnObject.className + ' redactor_dropdown_' + btnName + '">' + btnObject.title + '</a>');
-					$item.on('click', $.proxy(function(e)
+
+					$item.on('mousedown', $.proxy(function(e) {
+						if (this.opts.air) this.selectionSave();
+					}, this));
+
+					$item.on('mouseup', $.proxy(function(e)
 					{
+						if (this.opts.air) this.selectionRestore();
+
 						if (e.preventDefault) e.preventDefault();
 						if (this.browser('msie')) e.returnValue = false;
 
