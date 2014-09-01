@@ -1,6 +1,6 @@
 /*
-	Redactor v9.2.5
-	Updated: Jun 5, 2014
+	Redactor v9.2.6
+	Updated: Jul 19, 2014
 
 	http://imperavi.com/redactor/
 
@@ -73,7 +73,7 @@
 	}
 
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '9.2.5';
+	$.Redactor.VERSION = '9.2.6';
 	$.Redactor.opts = {
 
 			// settings
@@ -901,8 +901,6 @@
 				// do not sync
 				return false;
 			}
-
-
 			// fix second level up ul, ol
 			html = html.replace(/<\/li><(ul|ol)>([\w\W]*?)<\/(ul|ol)>/gi, '<$1>$2</$1></li>');
 
@@ -2518,6 +2516,8 @@
 		{
 			if (!this.opts.air) return;
 
+			this.selectionSave();
+
 			var left, top;
 			$('.redactor_air').hide();
 
@@ -2623,6 +2623,11 @@
 					$item = $('<a href="#" class="' + btnObject.className + ' redactor_dropdown_' + btnName + '">' + btnObject.title + '</a>');
 					$item.on('click', $.proxy(function(e)
 					{
+						if (this.opts.air)
+						{
+							this.selectionRestore();
+						}
+
 						if (e.preventDefault) e.preventDefault();
 						if (this.browser('msie')) e.returnValue = false;
 
@@ -2632,6 +2637,7 @@
 
 						this.buttonActiveObserver();
 						if (this.opts.air) this.$air.fadeOut(100);
+
 
 					}, this));
 				}
@@ -2687,7 +2693,6 @@
 
 			var hdlHideDropDown = $.proxy(function(e)
 			{
-
 				this.dropdownHide(e, $dropdown);
 
 			}, this);
@@ -4651,9 +4656,9 @@
 				var range = sel.getRangeAt(0);
 				range.deleteContents();
 
-				var el = this.document.createElement('div');
+				var el = document.createElement('div');
 				el.innerHTML = html;
-				var frag = this.document.createDocumentFragment(), node, lastNode;
+				var frag = document.createDocumentFragment(), node, lastNode;
 				while ((node = el.firstChild))
 				{
 					lastNode = frag.appendChild(node);
@@ -6086,6 +6091,7 @@
 			}
 			else
 			{
+
 				this.insertHtmlAdvanced(html, false);
 			}
 
@@ -7358,8 +7364,8 @@
 			}
 
 			$('#redactor_modal_close').on('click', $.proxy(this.modalClose, this));
-			$(document).keyup($.proxy(this.modalCloseHandler, this));
-			this.$editor.keyup($.proxy(this.modalCloseHandler, this));
+			$(document).on('keyup', $.proxy(this.modalCloseHandler, this));
+			this.$editor.on('keyup', $.proxy(this.modalCloseHandler, this));
 
 			this.modalSetContent(content);
 			this.modalSetTitle(title);
@@ -7552,8 +7558,8 @@
 					$('#redactor_modal_overlay').hide().off('click', this.modalClose);
 				}
 
-				$(document).unbind('keyup', this.hdlModalClose);
-				this.$editor.unbind('keyup', this.hdlModalClose);
+				$(document).off('keyup', this.modalCloseHandler);
+				this.$editor.off('keyup', this.modalCloseHandler);
 
 				this.selectionRestore();
 
