@@ -1,4 +1,4 @@
-(function ($) {
+(function($) {
 	$.Redactor.opts.langs['hr'] = {
 		html: 'HTML',
 		video: 'Umetni video',
@@ -6,6 +6,7 @@
 		table: 'Tablica',
 		link: 'Poveznica',
 		link_insert: 'Umetni poveznicu',
+		link_edit: 'Uredi poveznicu',
 		unlink: 'Ukloni poveznicu',
 		formatting: 'Ure&#273ivanje',
 		paragraph: 'Paragraf',
@@ -45,6 +46,7 @@
 		none: 'Nema',
 		left: 'lijevo',
 		right: 'desno',
+		center: 'centriraj',
 		image_web_link: 'Internet adresa slike',
 		text: 'Tekst',
 		mailto: 'Email',
@@ -67,7 +69,7 @@
 		underline: 'Podvuci',
 		alignment: 'Poravnanje',
 		filename: 'Naziv (neobavezno)',
-		edit: 'Edit',
-		center: 'Center'
+		edit: 'Uredi',
+		fullscreen: 'Cijeli zaslon'
 	};
 })(jQuery);

@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.3.0
+----
+
+- Imperavi redactor, plugins and languages updated to 10.0.0 (samdark)
+
 1.2.23
 ------
 

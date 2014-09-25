@@ -1,27 +1,32 @@
 if (!RedactorPlugins) var RedactorPlugins = {};
 
-RedactorPlugins.fontfamily = {
-	init: function ()
-	{
-		var fonts = [ 'Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Monospace' ];
-		var that = this;
-		var dropdown = {};
-
-		$.each(fonts, function(i, s)
+RedactorPlugins.fontfamily = function()
+{
+	return {
+		init: function ()
 		{
-			dropdown['s' + i] = { title: s, callback: function() { that.setFontfamily(s); }};
-		});
+			var fonts = [ 'Arial', 'Helvetica', 'Georgia', 'Times New Roman', 'Monospace' ];
+			var that = this;
+			var dropdown = {};
 
-		dropdown['remove'] = { title: 'Remove font', callback: function() { that.resetFontfamily(); }};
+			$.each(fonts, function(i, s)
+			{
+				dropdown['s' + i] = { title: s, func: function() { that.fontfamily.set(s); }};
+			});
 
-		this.buttonAdd('fontfamily', 'Change font family', false, dropdown);
-	},
-	setFontfamily: function (value)
-	{
-		this.inlineSetStyle('font-family', value);
-	},
-	resetFontfamily: function()
-	{
-		this.inlineRemoveStyle('font-family');
-	}
+			dropdown.remove = { title: 'Remove Font Family', func: that.fontfamily.reset };
+
+			var button = this.button.add('fontfamily', 'Change Font Family');
+			this.button.addDropdown(button, dropdown);
+
+		},
+		set: function (value)
+		{
+			this.inline.format('span', 'style', 'font-family:' + value + ';');
+		},
+		reset: function()
+		{
+			this.inline.removeStyleRule('font-family');
+		}
+	};
 };
