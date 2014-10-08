@@ -1,6 +1,6 @@
 /*
-	Redactor v10.0
-	Updated: September 24, 2014
+	Redactor v10.0.1
+	Updated: October 6, 2014
 
 	http://imperavi.com/redactor/
 
@@ -94,7 +94,7 @@
 
 	// Functionality
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '10.0';
+	$.Redactor.VERSION = '10.0.1';
 	$.Redactor.modules = ['core', 'build', 'lang', 'toolbar', 'button', 'dropdown', 'code',
 						  'clean', 'tidy', 'paragraphize', 'tabifier', 'focus', 'placeholder', 'autosave', 'buffer', 'indent', 'alignment', 'paste',
 						  'keydown', 'keyup', 'shortcuts', 'line', 'list', 'block', 'inline', 'insert', 'caret', 'selection', 'observe',
@@ -151,7 +151,6 @@
 		uploadImageField: false,
 
 		dragImageUpload: true,
-		clipboardImageUpload: false,
 
 		fileUpload: false,
 		fileUploadParam: 'file',
@@ -174,6 +173,7 @@
 		toolbar: true,
 		toolbarFixed: true,
 		toolbarFixedTarget: document,
+		toolbarFixedTopOffset: 0, // pixels
 		toolbarExternal: false, // ID selector
 		toolbarOverflow: false,
 
@@ -990,7 +990,7 @@
 						if (!this.opts.toolbar[btnName]) return;
 
 						if (this.opts.fileUpload === false && btnName === 'file') return true;
-						if (this.opts.imageUpload === false && btnName === 'image') return true;
+						if ((this.opts.imageUpload === false && this.opts.s3 === false) && btnName === 'image') return true;
 
 						var btnObject = this.opts.toolbar[btnName];
 						this.$toolbar.append($('<li>').append(this.button.build(btnName, btnObject)));
@@ -1035,7 +1035,10 @@
 					if (this.opts.buttonSource) return;
 
 					var index = this.opts.buttons.indexOf('html');
-					this.opts.buttons.splice(index, 1);
+					if (index !== -1)
+					{
+						this.opts.buttons.splice(index, 1);
+					}
 				},
 				hideButtons: function()
 				{
@@ -1080,7 +1083,7 @@
 				},
 				observeScrollEnable: function(scrollTop, boxTop)
 				{
-					var top = scrollTop - boxTop;
+					var top = this.opts.toolbarFixedTopOffset + scrollTop - boxTop;
 					var left = 0;
 					var end = boxTop + this.$box.height() + 30;
 					var width = this.$box.innerWidth();
@@ -1115,7 +1118,7 @@
 					var self = this;
 					$('.redactor-dropdown').each(function()
 					{
-						$(this).css({ position: 'fixed', top: self.$toolbar.innerHeight() });
+						$(this).css({ position: 'fixed', top: self.$toolbar.innerHeight() + self.opts.toolbarFixedTopOffset });
 					});
 				},
 				unsetDropdownsFixed: function()
@@ -1465,7 +1468,7 @@
 						var left = keyPosition.left + 'px';
 						if (this.$toolbar.hasClass('toolbar-fixed-box'))
 						{
-							$dropdown.css({ position: 'fixed', left: left, top: this.$toolbar.innerHeight() }).show();
+							$dropdown.css({ position: 'fixed', left: left, top: this.$toolbar.innerHeight() + this.opts.toolbarFixedTopOffset }).show();
 						}
 						else
 						{
@@ -1583,7 +1586,7 @@
 				},
 				showCode: function()
 				{
-					this.code.coords = this.caret.getCoords();
+					this.code.offset = this.caret.getOffset();
 					var scroll = $(window).scrollTop();
 
 					var height = this.$editor.innerHeight();
@@ -1625,13 +1628,7 @@
 						this.placeholder.remove();
 					}
 
-					this.$editor.focus();
-					this.caret.setToPoint(this.code.coords.x, this.code.coords.y);
-
-					if (this.focus.isFocused())
-					{
-						this.focus.setStart();
-					}
+					this.caret.setOffset(this.code.offset);
 
 					this.$textarea.off('keydown.redactor-textarea-indenting');
 
@@ -2109,7 +2106,7 @@
 
 					if (this.opts.paragraphize && typeof paragraphize == 'undefined')
 					{
-						html = this.clean.paragraphize(html);
+						html = this.paragraphize.load(html);
 					}
 
 					return html;
@@ -2939,6 +2936,13 @@
 					if (first[0].tagName == 'UL' || first[0].tagName == 'OL')
 					{
 						first = first.find('li').first();
+						var child = first.children().first();
+						if (!this.utils.isBlock(child) && child.text() == '')
+						{
+							// empty inline tag in li
+							this.caret.setStart(child);
+							return;
+						}
 					}
 
 					if (this.opts.linebreaks && !this.utils.isBlockTag(first[0].tagName))
@@ -3358,9 +3362,6 @@
 				{
 					if (!this.opts.cleanOnPaste) return;
 
-					// clipboard upload
-					if (this.opts.clipboardImageUpload && this.paste.detectEventClipboardUpload(e)) return;
-
 					this.rtePaste = true;
 
 					this.buffer.set();
@@ -3378,6 +3379,7 @@
 					setTimeout($.proxy(function()
 					{
 						var html = this.$pasteBox.html();
+
 						this.$pasteBox.remove();
 
 						this.selection.restore();
@@ -3394,7 +3396,7 @@
 				{
 					this.$pasteBox = $('<div>').html(' ').attr('contenteditable', 'true').css({ position: 'fixed', width: 0, top: 0, left: '-9999px' });
 
-					this.$pasteBox.appendTo(document.body);
+					$(document.body).append(this.$pasteBox);
 					this.$pasteBox.focus();
 				},
 				insert: function(html)
@@ -3418,94 +3420,9 @@
 					this.utils.disableSelectAll();
 					this.rtePaste = false;
 
-					// FF specific
-					if (this.utils.browser('mozilla')) setTimeout($.proxy(this.paste.clipboardUploadInMozilla, this), 100);
 					setTimeout($.proxy(this.clean.clearUnverified, this), 10);
 
-				},
-				// clipboard
-				detectEventClipboardUpload: function(e)
-				{
-					e = e.originalEvent || e;
-
-					if (typeof(e.clipboardData) === 'undefined') return;
-					if (!e.clipboardData.items || !e.clipboardData.items.length) return;
-
-					var file = e.clipboardData.items[0].getAsFile();
-					if (file === null) return false;
-
-					var reader = new FileReader();
-					reader.onload = $.proxy(this.paste.insertFromClipboard, this);
-			        reader.readAsDataURL(file);
-
-			        return true;
-				},
-				clipboardUploadInMozilla: function()
-				{
-					var imgs = this.$editor.find('img');
-					$.each(imgs, $.proxy(function(i,s)
-					{
-						if (s.src.search(/^data\:image/i) == -1) return;
-
-						var $s = $(s);
-						var arr = s.src.split(",");
-						var postData = {
-							'clipboard': 1,
-							'contentType': arr[0].split(";")[0].split(":")[1],
-							'data': arr[1] // raw base64
-						};
-
-
-						// append hidden fields
-						if (this.opts.uploadImageFields && typeof this.opts.uploadImageFields === 'object')
-						{
-							$.each(this.opts.uploadImageFields, $.proxy(function(k, v)
-							{
-								if (v !== null && v.toString().indexOf('#') === 0) v = $(v).val();
-								postData[k] = v;
-
-							}, this));
-						}
-
-						$.post(this.opts.imageUpload, postData,
-						$.proxy(function(data)
-						{
-							var json = (typeof data === 'string' ? $.parseJSON(data) : data);
-				        	$s.attr('src', json.filelink);
-
-				        	this.code.sync();
-
-							// upload callback
-							this.core.setCallback('imageUpload', $s, json);
-							this.observe.images();
-
-						}, this));
-
-
-					}, this));
-				},
-				insertFromClipboard: function(e)
-				{
-					var result = e.target.result;
-					var arr = result.split(",");
-
-					var formData = !!window.FormData ? new FormData() : null;
-					if (!window.FormData) return;
-
-					this.buffer.set();
-
-					this.upload.direct = true;
-					this.upload.type = 'image';
-					this.upload.url = this.opts.imageUpload;
-					this.upload.callback = this.image.insert;
-
-					formData.append('clipboard', 1);
-					formData.append('contentType', arr[0].split(";")[0].split(":")[1]);
-					formData.append('data', arr[1]); // raw base64
-
-					this.upload.sendData(formData, e);
 				}
-
 			};
 		},
 		keydown: function()
@@ -3574,7 +3491,7 @@
 							return false;
 						}
 
-						var current;
+						var current, $next;
 						if (this.keydown.pre)
 						{
 							return this.keydown.insertNewLine(e);
@@ -3582,7 +3499,7 @@
 						else if (this.keydown.blockquote || this.keydown.figcaption)
 						{
 							current = this.selection.getCurrent();
-							var $next = $(current).next();
+							$next = $(current).next();
 
 							if ($next.size() !== 0 && $next[0].tagName == 'BR')
 							{
@@ -3600,14 +3517,23 @@
 						else if (this.opts.linebreaks && !this.keydown.block)
 						{
 							current = this.selection.getCurrent();
-							if (current !== 0 && $(current).hasClass('redactor-invisible-space'))
+							$next = $(this.keydown.current).next();
+
+							if (current !== false && $(current).hasClass('redactor-invisible-space'))
 							{
 								$(current).remove();
 								return this.keydown.insertDblBreakLine(e);
 							}
 							else
 							{
-								return this.keydown.insertBreakLine(e);
+								if (typeof $next[0] == 'undefined')
+								{
+									return this.keydown.insertDblBreakLine(e);
+								}
+								else
+								{
+									return this.keydown.insertBreakLine(e);
+								}
 							}
 						}
 						else if (this.opts.linebreaks && this.keydown.block)
@@ -4102,8 +4028,8 @@
 
 					if (this.opts.linebreaks)
 					{
-						if (!this.utils.browser('msie')) this.$editor.html('<br />');
-						this.focus.setStart();
+						this.$editor.html(this.selection.getMarkerAsHtml());
+						this.selection.restore();
 					}
 					else
 					{
@@ -5624,7 +5550,7 @@
 					this.range.collapse(false);
 					this.selection.addRange();
 				},
-				getOffset: function(node)
+				getOffsetOfElement: function(node)
 				{
 					node = node[0] || node;
 
@@ -5636,137 +5562,57 @@
 
 					return $.trim(cloned.toString()).length;
 				},
-				setToPoint: function(startX, startY)
+				getOffset: function()
 				{
+					var offset = 0;
+				    var sel = window.getSelection();
+				    if (sel.rangeCount > 0)
+				    {
+				        var range = window.getSelection().getRangeAt(0);
+				        var preCaretRange = range.cloneRange();
+				        preCaretRange.selectNodeContents(this.$editor[0]);
+				        preCaretRange.setEnd(range.endContainer, range.endOffset);
+				        offset = preCaretRange.toString().length;
+				    }
 
-					if (startX === 0 && startY === 0)
+					return offset;
+				},
+				setOffset: function(start, end)
+				{
+					if (typeof end == 'undefined') end = start;
+					if (!this.focus.isFocused()) this.focus.setStart();
+
+					var range = document.createRange();
+					var sel = document.getSelection();
+					var node, offset = 0;
+					var walker = document.createTreeWalker(this.$editor[0], NodeFilter.SHOW_TEXT, null, null);
+
+					while (node = walker.nextNode())
 					{
-						this.focus.setStart();
-						return;
-					}
-
-					var start, range = null;
-					if (document.caretPositionFromPoint)
-					{
-						start = document.caretPositionFromPoint(startX, startY);
-
-						range = document.createRange();
-
-						range.setStart(start.offsetNode, start.offset);
-						range.collapse(true);
-					}
-					// WebKit
-					else if (document.caretRangeFromPoint)
-					{
-						start = document.caretRangeFromPoint(startX, startY);
-						range = document.createRange();
-
-						if (start !== null)
+						offset += node.nodeValue.length;
+						if (offset > start)
 						{
-							range.setStart(start.startContainer, start.startOffset);
-							range.collapse(true);
+							range.setStart(node, node.nodeValue.length + start - offset);
+							start = Infinity;
 						}
-						else
+
+						if (offset >= end)
 						{
-							range = null;
+							range.setEnd(node, node.nodeValue.length + end - offset);
+							break;
 						}
-
-					}
-					// IE
-					else if (document.body.createTextRange)
-					{
-					    range = document.body.createTextRange();
-					    range.moveToPoint(startX, startY);
-						range.select();
 					}
 
-					if (range !== null)
-					{
-						var sel = document.getSelection();
-						sel.removeAllRanges();
-						sel.addRange(range);
-					}
-
-
-					if (!this.focus.isFocused())
-					{
-						this.focus.setStart();
-					}
-
-					return;
-
+					sel.removeAllRanges();
+					sel.addRange(range);
+				},
+				setToPoint: function(start, end)
+				{
+					this.caret.setOffset(start, end);
 				},
 				getCoords: function()
 				{
-					if (!this.focus.isFocused())
-					{
-						this.$editor.focus();
-					}
-
-					var sel = document.selection, range, rect;
-					var x = 0, y = 0;
-
-					if (sel)
-					{
-						if (sel.type != "Control")
-						{
-							range = sel.createRange();
-							range.collapse(true);
-							x = range.boundingLeft;
-							y = range.boundingTop;
-						}
-					}
-					else if (document.getSelection)
-					{
-						sel = document.getSelection();
-
-						try
-						{
-							range = sel.getRangeAt(0).cloneRange();
-
-							if (range.getClientRects)
-							{
-								range.collapse(true);
-								rect = range.getClientRects()[0];
-
-								try
-								{
-									x = rect.left;
-									y = rect.top;
-								}
-								catch(e) {}
-
-							}
-
-							// Fallback
-							if (x === 0 && y === 0)
-							{
-								var span = document.createElement("span");
-								if (span.getClientRects)
-								{
-									span.appendChild(document.createTextNode("\u200b"));
-									range.insertNode(span);
-
-									rect = span.getClientRects()[0];
-
-									if (typeof rect != 'undefined')
-									{
-										x = rect.left;
-										y = rect.top;
-									}
-
-									var parent = span.parentNode;
-									parent.removeChild(span);
-									parent.normalize();
-								}
-							}
-						}
-						catch(e) {}
-
-					}
-
-					return { x: x, y: y };
-
+					return this.caret.getOffset();
 				}
 			};
 		},
@@ -5968,9 +5814,9 @@
 					$(document).find('span.redactor-nodes-marker').remove();
 					this.$editor.find('span.redactor-nodes-marker').remove();
 				},
-				fromPoint: function(startX, endX, startY, endY)
+				fromPoint: function(start, end)
 				{
-					this.caret.setToPoint(startX, endX, startY, endY);
+					this.caret.setOffset(start, end);
 				},
 				wrap: function(tag)
 				{
@@ -6121,15 +5967,21 @@
 
 					$.each(this.opts.activeButtonsStates, $.proxy(function(key, value)
 					{
-						if ($(parent).closest(key).length !== 0 || $(current).closest(key).length !== 0)
+						var parentEl = $(parent).closest(key);
+						var currentEl = $(current).closest(key);
+
+						if (!this.utils.isRedactorParent(parentEl)) return;
+						if (!this.utils.isRedactorParent(currentEl)) return;
+						if (parentEl.length !== 0 || currentEl.closest(key).length !== 0)
 						{
+
 							this.button.setActive(value);
 						}
 
 					}, this));
 
 					var $parent = $(parent).closest(this.opts.alignmentTags.toString().toLowerCase());
-					if ($parent.length)
+					if (this.utils.isRedactorParent(parent) && $parent.length)
 					{
 						var align = ($parent.css('text-align') === '') ? 'left' : $parent.css('text-align');
 						this.button.setActive('align' + align);
@@ -6340,7 +6192,8 @@
 
 					this.selection.restore();
 
-					if (text === '') return;
+					if (text === '' && link === '') return;
+					if (text === '' && link !== '') text = link;
 
 					if (this.link.$node)
 					{
@@ -6558,10 +6411,15 @@
 
 						if (this.$editor.find('#redactor-image-box').size() !== 0) return false;
 
+
+						this.image.resizer = this.image.loadEditableControls($image);
+
+						$(document).on('click.redactor-image-resize-hide', $.proxy(this.image.hideResize, this));
+						this.$editor.on('click.redactor-image-resize-hide', $.proxy(this.image.hideResize, this));
+
 						// resize
 						if (!this.opts.imageResizable) return;
 
-						this.image.resizer = this.image.loadEditableControls($image);
 						this.image.resizer.on('mousedown.redactor touchstart.redactor', $.proxy(function(e)
 						{
 							e.preventDefault();
@@ -6585,10 +6443,6 @@
 							this.image.startResize();
 
 						}, this));
-
-
-						$(document).on('click.redactor-image-resize-hide', $.proxy(this.image.hideResize, this));
-						this.$editor.on('click.redactor-image-resize-hide', $.proxy(this.image.hideResize, this));
 
 
 					}, this));
@@ -6669,7 +6523,7 @@
 					if (imageBox.size() === 0) return;
 
 					this.image.editter.remove();
-					this.image.resizer.remove();
+					$(this.image.resizer).remove();
 
 					imageBox.find('img').css({
 						marginTop: imageBox[0].style.marginTop,
@@ -6694,14 +6548,7 @@
 				loadEditableControls: function($image)
 				{
 					var imageBox = $('<span id="redactor-image-box" data-redactor="verified">');
-					imageBox.css({
-						position: 'relative',
-						display: 'inline-block',
-						lineHeight: 0,
-						outline: '1px dashed rgba(0, 0, 0, .6)',
-						'float': $image.css('float')
-					});
-					imageBox.attr('contenteditable', false);
+					imageBox.css('float', $image.css('float')).attr('contenteditable', false);
 
 					if ($image[0].style.margin != 'auto')
 					{
@@ -6723,20 +6570,6 @@
 
 					// editter
 					this.image.editter = $('<span id="redactor-image-editter" data-redactor="verified">' + this.lang.get('edit') + '</span>');
-					this.image.editter.css({
-						position: 'absolute',
-						zIndex: 5,
-						top: '50%',
-						left: '50%',
-						marginTop: '-11px',
-						marginLeft: '-18px',
-						lineHeight: 1,
-						backgroundColor: '#000',
-						color: '#fff',
-						fontSize: '11px',
-						padding: '7px 10px',
-						cursor: 'pointer'
-					});
 					this.image.editter.attr('contenteditable', false);
 					this.image.editter.on('click', $.proxy(function()
 					{
@@ -6754,18 +6587,6 @@
 					if (this.opts.imageResizable && !this.utils.isMobile())
 					{
 						var imageResizer = $('<span id="redactor-image-resizer" data-redactor="verified"></span>');
-						imageResizer.css({
-							position: 'absolute',
-							zIndex: 2,
-							lineHeight: 1,
-							cursor: 'nw-resize',
-							bottom: '-4px',
-							right: '-5px',
-							border: '1px solid #fff',
-							backgroundColor: '#000',
-							width: '8px',
-							height: '8px'
-						});
 
 						if (!this.utils.isDesktop())
 						{
@@ -6874,7 +6695,7 @@
 					this.buffer.set();
 
 
-					this.insert.html(this.utils.getOuterHtml(node));
+					this.insert.html(this.utils.getOuterHtml(node), false);
 
 					var $image = this.$editor.find('img[data-redactor-inserted-image=true]').removeAttr('data-redactor-inserted-image');
 
@@ -7445,7 +7266,18 @@
 							data = data.replace(/^\[/, '');
 							data = data.replace(/\]$/, '');
 
-							var json = (typeof data === 'string' ? $.parseJSON(data) : data);
+							var json;
+							try
+							{
+								json = (typeof data === 'string' ? $.parseJSON(data) : data);
+							}
+							catch(err)
+							{
+								json = {
+									error: true
+								};
+							}
+
 
 							this.progress.hide();
 
@@ -7809,7 +7641,7 @@
 					var block = this.selection.getBlock();
 					if (!block) return false;
 
-					var offset = this.caret.getOffset(block);
+					var offset = this.caret.getOffsetOfElement(block);
 
 					return (offset === 0) ? true : false;
 				},
@@ -7818,7 +7650,7 @@
 					var block = this.selection.getBlock();
 					if (!block) return false;
 
-					var offset = this.caret.getOffset(block);
+					var offset = this.caret.getOffsetOfElement(block);
 					var text = $.trim($(block).text()).replace(/\n\r\n/g, '');
 					var len = text.length;
 
@@ -7986,9 +7818,10 @@
 				// image
 				if (convertImageLinks && html && html.match(urlImage))
 				{
-					html = html.replace(urlImage, '<img src="$1">');
+					html = html.replace(urlImage, '<img src="$1" />');
 
 					$(n).after(html).remove();
+					return;
 				}
 
 				// link
@@ -8006,7 +7839,6 @@
 
 						var href = matches[z];
 						var text = href;
-
 
 						var space = '';
 						if (href.match(/\s$/) !== null) space = ' ';
