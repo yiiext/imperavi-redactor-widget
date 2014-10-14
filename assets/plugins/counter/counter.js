@@ -10,11 +10,19 @@ RedactorPlugins.counter = function()
 			this.$editor.on('keyup.redactor-limiter', $.proxy(function(e)
 			{
 				var words = 0, characters = 0, spaces = 0;
-				var text = this.$editor.text();
+
+				var html = this.code.get();
+
+				var text = html.replace(/<\/(.*?)>/gi, ' ');
+				text = text.replace(/<(.*?)>/gi, '');
+				text = text.replace(/\t/gi, '');
+				text = text.replace(/\n/gi, '');
+				text = text.replace(/\r/gi, '');
+				text = $.trim(text);
 
 				if (text !== '')
 				{
-					var arrWords = text.split(' ');
+					var arrWords = text.split(/\s+/);
 					var arrSpaces = text.match(/\s/g);
 
 					if (arrWords) words = arrWords.length;
