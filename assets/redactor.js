@@ -1,6 +1,6 @@
 /*
-	Redactor v10.0.1
-	Updated: October 6, 2014
+	Redactor v10.0.2
+	Updated: October 12, 2014
 
 	http://imperavi.com/redactor/
 
@@ -94,7 +94,7 @@
 
 	// Functionality
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '10.0.1';
+	$.Redactor.VERSION = '10.0.2';
 	$.Redactor.modules = ['core', 'build', 'lang', 'toolbar', 'button', 'dropdown', 'code',
 						  'clean', 'tidy', 'paragraphize', 'tabifier', 'focus', 'placeholder', 'autosave', 'buffer', 'indent', 'alignment', 'paste',
 						  'keydown', 'keyup', 'shortcuts', 'line', 'list', 'block', 'inline', 'insert', 'caret', 'selection', 'observe',
@@ -3526,14 +3526,12 @@
 							}
 							else
 							{
-								if (typeof $next[0] == 'undefined')
+								if ($next.length === 0 && current === false && typeof $next.context != 'undefined')
 								{
 									return this.keydown.insertDblBreakLine(e);
 								}
-								else
-								{
-									return this.keydown.insertBreakLine(e);
-								}
+
+								return this.keydown.insertBreakLine(e);
 							}
 						}
 						else if (this.opts.linebreaks && this.keydown.block)
@@ -3541,7 +3539,7 @@
 							setTimeout($.proxy(this.keydown.replaceDivToBreakLine, this), 1);
 						}
 						// paragraphs
-						else if (!this.opts.linebreaks && this.keydown.block)
+						else if (!this.opts.linebreaks && this.keydown.block && this.keydown.block.tagName !== 'LI')
 						{
 							setTimeout($.proxy(this.keydown.replaceDivToParagraph, this), 1);
 						}
@@ -4295,7 +4293,7 @@
 					var parent = this.selection.getParent();
 					var $list = $(parent).closest('ol, ul');
 
-					if (!this.opts.linebreaks && this.utils.isEmpty($list.find('li').text()))
+					if (this.utils.isEmpty($list.find('li').text()))
 					{
 						var $children = $list.children('li');
 						$children.find('br').remove();
@@ -6213,15 +6211,29 @@
 					}
 					else
 					{
-						document.execCommand('createLink', false, link);
-
-						var $a = $(this.selection.getCurrent()).closest('a');
-						if (target !== '')
+						if (this.utils.browser('mozilla') && this.link.text === '')
 						{
-							$a.attr('target', target);
-						}
+							var $a = $('<a />').attr('href', link).text(text);
+							if (target !== '') $a.attr('target', target);
 
-						$a.removeAttr('style');
+							this.insert.node($a);
+							this.selection.selectElement($a);
+						}
+						else
+						{
+							document.execCommand('createLink', false, link);
+
+							var $a = $(this.selection.getCurrent()).closest('a');
+
+							if (target !== '') $a.attr('target', target);
+							$a.removeAttr('style');
+
+							if (this.link.text === '')
+							{
+								$a.text(text);
+								this.selection.selectElement($a);
+							}
+						}
 
 						this.code.sync();
 						this.core.setCallback('insertedLink', $a);
@@ -7556,8 +7568,14 @@
 				removeEmpty: function(i, s)
 				{
 					var $s = $(s);
+
+					$s.find('.redactor-invisible-space').replaceWith(function()
+					{
+						return $(this).contents();
+					});
+
+					if ($s.find('hr, br, img').length !== 0) return;
 					var text = $.trim($s.text());
-					if ($s.children('hr, br, img').length !== 0) return;
 					if (this.utils.isEmpty(text, false))
 					{
 						$s.remove();
@@ -7576,7 +7594,7 @@
 				},
 				restoreScroll: function()
 				{
-					if (!this.saveScroll && !this.saveBodyScroll) return;
+					if (typeof this.saveScroll === 'undefined' && typeof this.saveBodyScroll === 'undefined') return;
 
 					$(window).scrollTop(this.saveBodyScroll);
 					this.$editor.scrollTop(this.saveEditorScroll);
@@ -7652,9 +7670,8 @@
 
 					var offset = this.caret.getOffsetOfElement(block);
 					var text = $.trim($(block).text()).replace(/\n\r\n/g, '');
-					var len = text.length;
 
-					return (offset == len) ? true : false;
+					return (offset == text.length) ? true : false;
 				},
 
 				// test blocks
