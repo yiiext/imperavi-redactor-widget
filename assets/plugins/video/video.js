@@ -37,19 +37,23 @@ RedactorPlugins.video = function()
 		insert: function()
 		{
 			var data = $('#redactor-insert-video-area').val();
-			data = this.clean.stripTags(data);
 
-			// parse if it is link on youtube & vimeo
-			var iframeStart = '<iframe style="width: 500px; height: 281px;" src="',
-				iframeEnd = '" frameborder="0" allowfullscreen></iframe>';
+			if (!data.match(/<iframe|<video/gi))
+			{
+				data = this.clean.stripTags(data);
 
-			if (data.match(this.video.reUrlYoutube))
-			{
-				data = data.replace(this.video.reUrlYoutube, iframeStart + '//www.youtube.com/embed/$1' + iframeEnd);
-			}
-			else if (data.match(this.video.reUrlVimeo))
-			{
-				data = data.replace(this.video.reUrlVimeo, iframeStart + '//player.vimeo.com/video/$2' + iframeEnd);
+				// parse if it is link on youtube & vimeo
+				var iframeStart = '<iframe style="width: 500px; height: 281px;" src="',
+					iframeEnd = '" frameborder="0" allowfullscreen></iframe>';
+
+				if (data.match(this.video.reUrlYoutube))
+				{
+					data = data.replace(this.video.reUrlYoutube, iframeStart + '//www.youtube.com/embed/$1' + iframeEnd);
+				}
+				else if (data.match(this.video.reUrlVimeo))
+				{
+					data = data.replace(this.video.reUrlVimeo, iframeStart + '//player.vimeo.com/video/$2' + iframeEnd);
+				}
 			}
 
 			this.selection.restore();
