@@ -1,41 +1,44 @@
 if (!RedactorPlugins) var RedactorPlugins = {};
 
-RedactorPlugins.counter = function()
+(function($)
 {
-	return {
-		init: function()
-		{
-			if (!this.opts.counterCallback) return;
-
-			this.$editor.on('keyup.redactor-limiter', $.proxy(function(e)
+	RedactorPlugins.counter = function()
+	{
+		return {
+			init: function()
 			{
-				var words = 0, characters = 0, spaces = 0;
+				if (!this.opts.counterCallback) return;
 
-				var html = this.code.get();
-
-				var text = html.replace(/<\/(.*?)>/gi, ' ');
-				text = text.replace(/<(.*?)>/gi, '');
-				text = text.replace(/\t/gi, '');
-				text = text.replace(/\n/gi, '');
-				text = text.replace(/\r/gi, '');
-				text = $.trim(text);
-
-				if (text !== '')
+				this.$editor.on('keyup.redactor-limiter', $.proxy(function(e)
 				{
-					var arrWords = text.split(/\s+/);
-					var arrSpaces = text.match(/\s/g);
+					var words = 0, characters = 0, spaces = 0;
 
-					if (arrWords) words = arrWords.length;
-					if (arrSpaces) spaces = arrSpaces.length;
+					var html = this.code.get();
 
-					characters = text.length;
+					var text = html.replace(/<\/(.*?)>/gi, ' ');
+					text = text.replace(/<(.*?)>/gi, '');
+					text = text.replace(/\t/gi, '');
+					text = text.replace(/\n/gi, '');
+					text = text.replace(/\r/gi, '');
+					text = $.trim(text);
 
-				}
+					if (text !== '')
+					{
+						var arrWords = text.split(/\s+/);
+						var arrSpaces = text.match(/\s/g);
 
-				this.core.setCallback('counter', { words: words, characters: characters, spaces: spaces });
+						if (arrWords) words = arrWords.length;
+						if (arrSpaces) spaces = arrSpaces.length;
+
+						characters = text.length;
+
+					}
+
+					this.core.setCallback('counter', { words: words, characters: characters, spaces: spaces });
 
 
-			}, this));
-		}
+				}, this));
+			}
+		};
 	};
-};
+})(jQuery);
