@@ -68,7 +68,7 @@ $.Redactor.opts.langs['pl'] = {
 	link_new_tab: 'Otwórz link w nowym oknie',
 	underline: 'Podkreślony',
 	alignment: 'Wyrównanie',
-	filename: 'Name (optional)',
+	filename: 'Nazwa (opcjonalna)',
 	edit: 'Edycja',
 	center: 'wyśrodkowany'
 };
