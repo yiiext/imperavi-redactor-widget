@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.3.9
+-----
+
+- Imperavi redactor updated to 10.0.9 (samdark)
+
 1.3.8
 -----
 
