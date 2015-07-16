@@ -9,8 +9,6 @@
  * @author Veaceslav Medvedev <slavcopost@gmail.com>
  * @author Alexander Makarov <sam@rmcreative.ru>
  *
- * @version 1.3.12
- *
  * @link https://github.com/yiiext/imperavi-redactor-widget
  * @link http://imperavi.com/redactor
  * @license https://github.com/yiiext/imperavi-redactor-widget/blob/master/license.md
