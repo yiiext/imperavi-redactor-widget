@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.textdirection = function()
+	$.Redactor.prototype.textdirection = function()
 	{
 		return {
 			init: function()

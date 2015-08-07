@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.fontcolor = function()
+	$.Redactor.prototype.fontcolor = function()
 	{
 		return {
 			init: function()

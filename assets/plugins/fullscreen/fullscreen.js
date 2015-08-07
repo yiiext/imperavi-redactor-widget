@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.fullscreen = function()
+	$.Redactor.prototype.fullscreen = function()
 	{
 		return {
 			init: function()

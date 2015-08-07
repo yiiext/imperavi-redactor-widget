@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.textexpander = function()
+	$.Redactor.prototype.textexpander = function()
 	{
 		return {
 			init: function()
@@ -14,7 +12,7 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 					var key = e.which;
 					if (key == this.keyCode.SPACE)
 					{
-						var current = this.selection.getCurrent();
+						var current = this.textexpander.getCurrent();
 						var cloned = $(current).clone();
 
 						var $div = $('<div>');
@@ -54,6 +52,21 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 
 				}, this));
 
+			},
+			getCurrent: function()
+			{
+				var selection
+				if (window.getSelection) selection = window.getSelection();
+				else if (document.selection && document.selection.type != "Control") selection = document.selection;
+
+				if (this.utils.browser('mozilla'))
+				{
+					return selection.anchorNode.previousSibling;
+				}
+				else
+				{
+					return selection.anchorNode;
+				}
 			}
 		};
 	};

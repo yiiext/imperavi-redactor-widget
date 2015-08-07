@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.table = function()
+	$.Redactor.prototype.table = function()
 	{
 		return {
 			getTemplate: function()
@@ -17,19 +15,161 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 			},
 			init: function()
 			{
-
 				var dropdown = {};
 
-				dropdown.insert_table = { title: this.lang.get('insert_table'), func: this.table.show };
-				dropdown.insert_row_above = { title: this.lang.get('insert_row_above'), func: this.table.addRowAbove };
-				dropdown.insert_row_below = { title: this.lang.get('insert_row_below'), func: this.table.addRowBelow };
-				dropdown.insert_column_left = { title: this.lang.get('insert_column_left'), func: this.table.addColumnLeft };
-				dropdown.insert_column_right = { title: this.lang.get('insert_column_right'), func: this.table.addColumnRight };
-				dropdown.add_head = { title: this.lang.get('add_head'), func: this.table.addHead };
-				dropdown.delete_head = { title: this.lang.get('delete_head'), func: this.table.deleteHead };
-				dropdown.delete_column = { title: this.lang.get('delete_column'), func: this.table.deleteColumn };
-				dropdown.delete_row = { title: this.lang.get('delete_row'), func: this.table.deleteRow };
-				dropdown.delete_table = { title: this.lang.get('delete_table'), func: this.table.deleteTable };
+				dropdown.insert_table = {
+									title: this.lang.get('insert_table'),
+									func: this.table.show,
+									observe: {
+										element: 'table',
+										in: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
+
+				dropdown.insert_row_above = {
+									title: this.lang.get('insert_row_above'),
+									func: this.table.addRowAbove,
+									observe: {
+										element: 'table',
+										out: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
+
+				dropdown.insert_row_below = {
+									title: this.lang.get('insert_row_below'),
+									func: this.table.addRowBelow,
+									observe: {
+										element: 'table',
+										out: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
+
+				dropdown.insert_row_below = {
+									title: this.lang.get('insert_row_below'),
+									func: this.table.addRowBelow,
+									observe: {
+										element: 'table',
+										out: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
+
+				dropdown.insert_column_left = {
+									title: this.lang.get('insert_column_left'),
+									func: this.table.addColumnLeft,
+									observe: {
+										element: 'table',
+										out: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
+
+				dropdown.insert_column_right = {
+									title: this.lang.get('insert_column_right'),
+									func: this.table.addColumnRight,
+									observe: {
+										element: 'table',
+										out: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
+
+				dropdown.add_head = {
+									title: this.lang.get('add_head'),
+									func: this.table.addHead,
+									observe: {
+										element: 'table',
+										out: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
+
+				dropdown.delete_head = {
+									title: this.lang.get('delete_head'),
+									func: this.table.deleteHead,
+									observe: {
+										element: 'table',
+										out: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
+
+				dropdown.delete_column = {
+									title: this.lang.get('delete_column'),
+									func: this.table.deleteColumn,
+									observe: {
+										element: 'table',
+										out: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
+
+				dropdown.delete_row = {
+									title: this.lang.get('delete_row'),
+									func: this.table.deleteRow,
+									observe: {
+										element: 'table',
+										out: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
+
+				dropdown.delete_row = {
+									title: this.lang.get('delete_table'),
+									func: this.table.deleteTable,
+									observe: {
+										element: 'table',
+										out: {
+											attr: {
+												'class': 'redactor-dropdown-link-inactive',
+												'aria-disabled': true,
+											}
+										}
+									}
+								};
 
 				this.observe.addButton('td', 'table');
 				this.observe.addButton('th', 'table');
@@ -55,6 +195,7 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 			},
 			insert: function()
 			{
+				this.placeholder.remove();
 
 				var rows = $('#redactor-table-rows').val(),
 					columns = $('#redactor-table-columns').val(),
@@ -86,7 +227,6 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 				$tableBox.append($table);
 				var html = $tableBox.html();
 
-
 				this.modal.close();
 				this.selection.restore();
 
@@ -102,12 +242,19 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 				}
 				else
 				{
-					this.insert.html(html);
+					this.insert.html(html, false);
 				}
 
 				this.selection.restore();
 
 				var table = this.$editor.find('#table' + tableId);
+
+				var p = table.prev("p");
+
+				if (p.length > 0 && this.utils.isEmpty(p.html()))
+				{
+					p.remove();
+				}
 
 				if (!this.opts.linebreaks && (this.utils.browser('mozilla') || this.utils.browser('msie')))
 				{

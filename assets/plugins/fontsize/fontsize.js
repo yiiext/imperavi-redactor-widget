@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.fontsize = function()
+	$.Redactor.prototype.fontsize = function()
 	{
 		return {
 			init: function()
