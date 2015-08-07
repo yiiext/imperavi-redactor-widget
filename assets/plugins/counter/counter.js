@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.counter = function()
+	$.Redactor.prototype.counter = function()
 	{
 		return {
 			init: function()
@@ -18,8 +16,8 @@ if (!RedactorPlugins) var RedactorPlugins = {};
 					var text = html.replace(/<\/(.*?)>/gi, ' ');
 					text = text.replace(/<(.*?)>/gi, '');
 					text = text.replace(/\t/gi, '');
-					text = text.replace(/\n/gi, '');
-					text = text.replace(/\r/gi, '');
+					text = text.replace(/\n/gi, ' ');
+					text = text.replace(/\r/gi, ' ');
 					text = $.trim(text);
 
 					if (text !== '')

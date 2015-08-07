@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.limiter = function()
+	$.Redactor.prototype.limiter = function()
 	{
 		return {
 			init: function()

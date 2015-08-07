@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.fontfamily = function()
+	$.Redactor.prototype.fontfamily = function()
 	{
 		return {
 			init: function ()

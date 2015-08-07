@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.definedlinks = function()
+	$.Redactor.prototype.definedlinks = function()
 	{
 		return {
 			init: function()

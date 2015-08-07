@@ -1,8 +1,6 @@
-if (!RedactorPlugins) var RedactorPlugins = {};
-
 (function($)
 {
-	RedactorPlugins.filemanager = function()
+	$.Redactor.prototype.filemanager = function()
 	{
 		return {
 			init: function()
