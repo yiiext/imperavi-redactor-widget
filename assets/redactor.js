@@ -1,6 +1,6 @@
 /*
-	Redactor 10.2.3
-	Updated: August 15, 2015
+	Redactor 10.2.4
+	Updated: September 25, 2015
 
 	http://imperavi.com/redactor/
 
@@ -92,7 +92,7 @@
 
 	// Functionality
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '10.2.3';
+	$.Redactor.VERSION = '10.2.4';
 	$.Redactor.modules = ['alignment', 'autosave', 'block', 'buffer', 'build', 'button',
 						  'caret', 'clean', 'code', 'core', 'dropdown', 'file', 'focus',
 						  'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
@@ -477,14 +477,17 @@
 				set: function(type)
 				{
 					// focus
-					if (!this.utils.browser('msie')) this.$editor.focus();
-
-					this.buffer.set();
-					this.selection.save();
+					if (!this.utils.browser('msie') && !this.opts.linebreaks)
+					{
+						this.$editor.focus();
+					}
 
 					// get blocks
 					this.alignment.blocks = this.selection.getBlocks();
 					this.alignment.type = type;
+
+					this.buffer.set();
+					this.selection.save();
 
 					// set alignment
 					if (this.alignment.isLinebreaksOrNoBlocks())
@@ -1363,6 +1366,12 @@
 				setEvents: function()
 				{
 					// drop
+					this.$editor.on('dragover.redactor dragenter.redactor', function(e)
+					{
+						e.preventDefault();
+						e.stopPropagation();
+				    });
+
 					this.$editor.on('drop.redactor', $.proxy(function(e)
 					{
 						e = e.originalEvent || e;
@@ -1585,15 +1594,19 @@
 
 					$button.on('mouseover', function()
 					{
-						if ($(this).hasClass('redactor-button-disabled')) return;
+						if ($(this).hasClass('redactor-button-disabled'))
+						{
+							return;
+						}
 
 						var pos = $button.offset();
 
-						$tooltip.show();
 						$tooltip.css({
 							top: (pos.top + $button.innerHeight()) + 'px',
 							left: (pos.left + $button.innerWidth()/2 - $tooltip.innerWidth()/2) + 'px'
 						});
+						$tooltip.show();
+
 					});
 
 					$button.on('mouseout', function()
@@ -3432,7 +3445,6 @@
 					// disable scroll whan dropdown scroll
 					$dropdown.on('mouseover.redactor-dropdown', $.proxy(this.utils.disableBodyScroll, this)).on('mouseout.redactor-dropdown', $.proxy(this.utils.enableBodyScroll, this));
 
-
 					e.stopPropagation();
 				},
 				closeHandler: function(e)
@@ -3466,8 +3478,11 @@
 
 					if (!$dropdown.hasClass('dropact') && !$dropdown.hasClass('redactor-dropdown-link-inactive'))
 					{
-						$dropdown.removeClass('dropact');
-						$dropdown.off('mouseover mouseout');
+						if ($dropdown.hasClass('redactor-dropdown'))
+						{
+							$dropdown.removeClass('dropact');
+							$dropdown.off('mouseover mouseout');
+						}
 
 						this.dropdown.hideAll();
 					}
@@ -4428,6 +4443,15 @@
 						});
 					}
 
+					if (tag != 'u')
+					{
+						var _this = this;
+						this.$editor.find('unline').each(function(i,s)
+						{
+							_this.utils.replaceToTag(s, 'u');
+						});
+					}
+
 					this.selection.restore();
 					this.code.sync();
 
@@ -4484,6 +4508,14 @@
 						this.$editor.find('del').each(function(i,s)
 						{
 							self.utils.replaceToTag(s, 'inline');
+						});
+					}
+
+					if (tag != 'u')
+					{
+						this.$editor.find('u').each(function(i,s)
+						{
+							self.utils.replaceToTag(s, 'unline');
 						});
 					}
 
@@ -5644,6 +5676,8 @@
 							$(this.keyup.current).remove();
 						}
 
+						this.keyup.removeEmptyLists();
+
 						// if empty
 						return this.keyup.formatEmpty(e);
 					}
@@ -5670,6 +5704,20 @@
 					}
 
 					this.caret.setEnd(node);
+				},
+				removeEmptyLists: function()
+				{
+					var removeIt = function()
+					{
+						var html = $.trim(this.innerHTML).replace(/\/t\/n/g, '');
+						if (html === '')
+						{
+							$(this).remove();
+						}
+					};
+
+					this.$editor.find('li').each(removeIt);
+					this.$editor.find('ul, ol').each(removeIt);
 				},
 				formatEmpty: function(e)
 				{
@@ -6289,7 +6337,11 @@
 				toggle: function(cmd)
 				{
 					this.placeholder.remove();
-					if (!this.utils.browser('msie')) this.$editor.focus();
+
+					if (!this.utils.browser('msie') && !this.opts.linebreaks)
+					{
+						this.$editor.focus();
+					}
 
 					this.buffer.set();
 					this.selection.save();
@@ -7240,10 +7292,10 @@
 					else
 					{
 						// bootstrap modal
-						if ($('.modal-body').length > 0)
+						if ($('.modal-body:visible').length > 0)
 						{
 
-							$('.modal.in .modal-body').append(this.$pasteBox);
+							$('.modal.in .modal-body:visible').append(this.$pasteBox);
 						}
 						else
 						{
@@ -7488,7 +7540,13 @@
 					nodes = (typeof nodes == 'undefined') ? this.selection.getNodes() : nodes;
 					$.each(nodes, $.proxy(function(i,node)
 					{
-						if (this.utils.isBlock(node))
+						var parent = $(node).parent();
+						if (i === 0 && this.utils.isBlock(parent))
+						{
+							this.selection.lastBlock = parent[0];
+							blocks.push(parent[0]);
+						}
+						else if (this.utils.isBlock(node))
 						{
 							this.selection.lastBlock = node;
 							blocks.push(node);
