@@ -5,7 +5,9 @@ Imperavi Redactor Widget
 a high quality WYSIWYG editor.
 
 Note that Imperavi Redactor itself is a proprietary commercial copyrighted software
-but since Yii community bought OEM license you can use it for free with Yii.
+but since Yii community bought OEM license you can use it for free with both Yii 1.1.x and Yii 2.0.x.
+
+This repository contains an extension for 1.1.x. For 2.0.x check https://github.com/vova07/yii2-imperavi-widget.
 
 Usage
 -----
