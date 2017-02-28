@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.3.18
+------
+
+- Table plugin updated.
+- Slovak translation.
+
 1.3.17
 ------
 
