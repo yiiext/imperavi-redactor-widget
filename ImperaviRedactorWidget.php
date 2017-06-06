@@ -37,6 +37,12 @@ class ImperaviRedactorWidget extends CInputWidget
 	 */
 	public $package = array();
 
+        /**
+         * Use minified version
+         * @var type 
+         */
+        public $minify = YII_DEBUG;
+
 	/**
 	 * @var array
 	 */
@@ -73,7 +79,7 @@ class ImperaviRedactorWidget extends CInputWidget
 		$this->package = array_merge(array(
 				'baseUrl' => $this->getAssetsUrl(),
 				'js' => array(
-					YII_DEBUG ? 'redactor.js' : 'redactor.min.js',
+					$this->minify ? 'redactor.js' : 'redactor.min.js',
 				),
 				'css' => array(
 					'redactor.css',
